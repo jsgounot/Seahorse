@@ -123,3 +123,10 @@ def basic_legend(ax, names_color, * args, ** kwargs) :
         for name, color in names_color.items()]
     
     ax.legend(handles=handle)
+
+def add_custom_basic_legend(ax, names, palette=None, ** kwargs) :
+    palette = sns.color_palette() if palette is None else palette
+    if isinstance(palette, dict) : palette = [palette[name] for name in names]
+    patches = [Patch(color=palette[idx], label=label)
+    for idx, label in enumerate(names)]
+    ax.legend(handles = patches, ** kwargs)

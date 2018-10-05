@@ -11,8 +11,11 @@ from math import pi, degrees
 
 import pylab as plt
 import pandas as pd
+import numpy as np
 
 from matplotlib.collections import PathCollection
+
+from scipy.optimize import curve_fit
 
 import seaborn as sns
 
@@ -196,7 +199,9 @@ def barplot_twinx(left, right, data, ax, colors=None, width=.8, border_size=.5, 
 
     return (ax, ax2)
 
-def stacked_barplot(x, y, hue, data, ax, prop=False, sort_values=False, stack_order=None, * args, ** kwargs) :
+def stacked_barplot(x, y, hue, data, ax, prop=False, sort_values=False, 
+    stack_order=None, palette=None, * args, ** kwargs) :
+    
     ndf = pd.pivot_table(data, values=y, index=x, columns=hue)
     if prop : ndf = ndf.apply(lambda x : x / x.sum(), axis=1)
     ndf = ndf.fillna(0)
@@ -211,7 +216,15 @@ def stacked_barplot(x, y, hue, data, ax, prop=False, sort_values=False, stack_or
             ndf["sum"] = ndf.sum(axis=1)
             ndf = ndf.sort_values("sum", ascending=False).drop("sum", 1)
 
-    ndf.plot.bar(stacked=True, ax=ax, * args, ** kwargs)
+    if palette and isinstance(palette, dict) :
+        colors = [palette[column] for column in ndf.columns]
+    elif palette and isinstance(palette, list) :
+        colors = palette[:len(ndf.columns)]
+    else :
+        colors = None
+
+    if "color" in kwargs : kwargs.pop("color")
+    ndf.plot.bar(stacked=True, ax=ax, colors=colors, * args, ** kwargs)
 
 def dist_barplot(column, bin_size, data, ax, filler=None, colors=None, * args, ** kwargs) :
     colors = colors or constants.DEFAULT_COLOR
@@ -226,6 +239,21 @@ def dist_barplot(column, bin_size, data, ax, filler=None, colors=None, * args, *
     bins = bins.rename("count").to_frame().reset_index()
     sns.barplot(x="index", y="count", data=bins, ax=ax, color=colors, * args, ** kwargs)
 
+def barplot_huecolor(data, ax, hue, * args, colors=None, ** kwargs) :
+    sns.barplot(* args, data=data, ax=ax, ** kwargs)
+    shues = sorted(data[hue].unique())
+    hues = list(data[hue])
+    
+    if colors is None : 
+        colors = sns.color_palette()
+        colors = {hue : colors[idx] for idx, hue in enumerate(shues)}
+
+    for idx, patch in enumerate(ax.patches) :
+        hue = hues[idx]
+        color = colors[hue]
+        patch.set_color(color)
+
+    graph_utils.add_custom_basic_legend(ax, shues, colors)
 
 """
 ╔═╗┬┬─┐┌─┐┬ ┬┬  ┌─┐┬─┐  ┌┐ ┌─┐┬─┐┌─┐┬  ┌─┐┌┬┐
@@ -282,3 +310,39 @@ def circular_barplot(cname, cvalue, data, ax=None, palette=None, sep_width=0.02,
     for label in labels])
 
     if grid_below : ax.set_axisbelow(True)
+
+"""
+╦  ┬┌┐┌┌─┐┌─┐┬─┐  ┬─┐┌─┐┌─┐┬─┐┌─┐┌─┐┌─┐┬┌─┐┌┐┌
+║  ││││├┤ ├─┤├┬┘  ├┬┘├┤ │ ┬├┬┘├┤ └─┐└─┐││ ││││
+╩═╝┴┘└┘└─┘┴ ┴┴└─  ┴└─└─┘└─┘┴└─└─┘└─┘└─┘┴└─┘┘└┘
+"""
+
+def non_linear_reg(fun, col1, col2, data, ax, kwargs_cfit={}, yvalues_plot=None, nid=None, * args, ** kwargs) :
+    # https://stackoverflow.com/questions/46497892/non-linear-regression-in-seaborn-python
+    # https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.curve_fit.html
+    # Non linear regression using scipy
+    # You have to provide a function which will take X, A, B and C as arguments
+
+    c1, c2 = np.array(data[col1]), np.array(data[col2])
+    popt, pcov = curve_fit(fun, c1, c2, ** kwargs_cfit)
+    
+    # r2 calculation
+    # https://stackoverflow.com/questions/19189362/getting-the-r-squared-value-using-curve-fit
+    
+    residuals = c2 - fun(c1, * popt)
+    ss_res = np.sum(residuals ** 2)
+    ss_tot = np.sum((c2 - np.mean(c2)) ** 2)
+    r2 = 1 - (ss_res / ss_tot)
+
+    c1 = yvalues_plot if yvalues_plot is not None else c1
+    yvalues = fun(c1, * popt)
+    if not yvalues.any() : raise Exception("Unable to find yvalues with this law")
+    ax.plot(c1, yvalues, * args, ** kwargs)
+
+    res = {estimator : popt[idx] for idx, estimator in enumerate("abc")}
+    res["r2"] = r2
+    
+    res["nlr"] = res
+    res["nlr_y"] = yvalues
+
+    return res
