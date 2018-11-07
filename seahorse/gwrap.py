@@ -78,6 +78,10 @@ class GBLibWrapper() :
             elif self.bind_data : kwargs["data"] = subdf
             if self.bind_axes : kwargs["ax"] = ax
 
+            if constants.DEBUG :
+                print (args)
+                print (kwargs)
+
             self.get_fun(funname, kwargs)(* args, ** kwargs)
             ax.set_title(title)
 
