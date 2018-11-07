@@ -43,7 +43,7 @@ class GraphsGroup() :
 class GBLibWrapper() :
 
     def __init__(self, lib, sc, iterator, bind_data=False, bind_axes=False, 
-        data_call=False, order=None, title_prefix=None, colors=None) :
+        data_call=False, order=None, title_prefix=None, colors=None, cuse=None) :
         
         self.lib = lib
         self.sc = sc
@@ -56,6 +56,7 @@ class GBLibWrapper() :
         self.order = order
         self.title_prefix = title_prefix
         self.colors = colors if colors is not None else sns.color_palette()
+        self.cuse = cuse
 
     def fun_wrap(self, funname, * args, ** kwargs) :
 
@@ -73,7 +74,8 @@ class GBLibWrapper() :
                 except IndexError : color = self.colors
                 kwargs["color"] = color
 
-            if self.bind_data : kwargs["data"] = subdf
+            if self.bind_data and self.cuse : kwargs["data"] = subdf[self.cuse]
+            elif self.bind_data : kwargs["data"] = subdf
             if self.bind_axes : kwargs["ax"] = ax
 
             self.get_fun(funname, kwargs)(* args, ** kwargs)
