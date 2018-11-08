@@ -103,11 +103,16 @@ class GBLibWrapper() :
 class GroupByPlotter() :
 
     def __init__(self, df, sc, hue, ignore_empty=True, ** kwargs) :
-        iterator = self.make_iterator(df, hue, ignore_empty)
 
-        self.shs = GBLibWrapper(graphfun, sc, iterator, True, True, False, ** kwargs)
-        self.sns = GBLibWrapper(sns, sc, iterator, True, True, False, ** kwargs)
-        self.df = GBLibWrapper(None, sc, iterator, True, True, True, ** kwargs)
+        self.df = df
+        self.sc = sc
+        self.hue = hue
+
+        self.iterator = self.make_iterator(df, hue, ignore_empty)
+
+        self.shs = GBLibWrapper(graphfun, sc, self.iterator, True, True, False, ** kwargs)
+        self.sns = GBLibWrapper(sns, sc, self.iterator, True, True, False, ** kwargs)
+        self.df = GBLibWrapper(None, sc, self.iterator, True, True, True, ** kwargs)
 
     def make_iterator(self, df, hue, ignore_empty) :
 
@@ -121,6 +126,14 @@ class GroupByPlotter() :
             try : name = " - ".join(name) if not isinstance(name, str) else name
             except : name = str(name)
             yield idx, name, subdf
+
+    def apply(self, fun, ** kwargs) :
+
+        for idx, name, subdf in self.iterator :
+            try : ax = self.sc.ax(idx)
+            except IndexError : raise IndexError("Not enought axes available")
+            fun(name, subdf, ax, ** kwargs)
+
 
 class Fig() :
     # class to manage the mpl figure object
