@@ -1,6 +1,6 @@
 ### Simple wrapper to produce graphs using python
 
-Use both matplotlib, pandas, seaborn and custom graphical function into the same object
+Use both matplotlib, pandas, seaborn and custom graphical functions into the same library
 
 Example :
 
