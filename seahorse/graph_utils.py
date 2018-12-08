@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2018-05-16 13:53:18
 # @Last modified by:   jsgounot
-# @Last Modified time: 2018-05-16 14:25:48
+# @Last Modified time: 2018-11-14 16:38:27
 
 from numpy import isfinite, isnan, pi
 
@@ -110,6 +110,11 @@ def cmap_from_color(colors) :
 
 def color_palette(* args, ** kwargs) :
     return sns.color_palette(* args, ** kwargs)
+
+def palette_ten() :
+    colors = ["#4C72B0", "#DD8452", "#55A868", "#C44E52", "#8172B3", 
+    "#937860", "#DA8BC3", "#8C8C8C", "#CCB974", "#64B5CD"]
+    return sns.color_palette(colors)
 
 """
 ┬  ┌─┐┌─┐┌─┐┌┐┌┌┬┐

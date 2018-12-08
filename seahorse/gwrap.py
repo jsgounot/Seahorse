@@ -438,6 +438,28 @@ class SubplotsContainer(Fig) :
             elif ax in ax_bottom : ax.set_ylabel("")
             else : ax.set_ylabel(""); ax.set_xlabel("")
 
+    def force_sharex(self) :
+        ax_bottom = self.get_axes_edge(bottom=True)
+        min_xlim = min(min(ax.get_xlim()) for ax in self.axes)
+        max_xlim = max(max(ax.get_xlim()) for ax in self.axes)
+
+        for ax in self.axes :
+            ax.set_xlim((min_xlim, max_xlim))
+            if ax not in ax_bottom : ax.set_xticklabels(["" for _ in ax.get_xticklabels()])
+
+    def force_sharey(self) :
+        ax_left = self.get_axes_edge(left=True)
+        min_ylim = min(min(ax.get_ylim()) for ax in self.axes)
+        max_ylim = max(max(ax.get_ylim()) for ax in self.axes)
+
+        for ax in self.axes :
+            ax.set_ylim((min_ylim, max_ylim))
+            if ax not in ax_left : ax.set_yticklabels(["" for _ in ax.get_yticklabels()])
+
+    def force_both(self) :
+        self.force_sharex()
+        self.force_sharey()
+
     def set_labels(self, xlabel=None, ylabel=None, sub=True, ** kwargs) :
         if sub : self._set_labels_sub(xlabel, ylabel, ** kwargs)
         else : self._set_labels_main(xlabel, ylabel, ** kwargs)
@@ -465,3 +487,16 @@ class SubplotsContainer(Fig) :
             if ax not in ax_bottom :
                 graph = Graph(ax=ax)
                 graph.transform_xticks(fun, which=which)
+
+    def select_legend(self, index, topright=True, ** kwargs) :
+
+        if topright :
+            kwargs.setdefault("loc", "upper left")
+            kwargs.setdefault("bbox_to_anchor", (1, 1))
+            kwargs.setdefault("prop", {"size" : 15})
+
+        for idx, ax in enumerate(self.axes) :
+            if idx == index :
+                self.graph(idx).set_legend(** kwargs)
+            else :
+                self.graph(idx).remove_legend()

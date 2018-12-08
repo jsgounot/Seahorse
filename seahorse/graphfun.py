@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2018-05-16 13:53:18
 # @Last modified by:   jsgounot
-# @Last Modified time: 2018-05-16 14:25:48
+# @Last Modified time: 2018-11-14 16:23:53
 
 # http://patorjk.com/software/taag/#p=display&v=3&f=Calvin%20S&t=barplot
 # Calvin S
@@ -81,13 +81,13 @@ def custom_plt(x, y, data, ax, hue=None, legend=True, colors=None, ** kwargs) :
         ax.set_xlabel(x)
         ax.set_ylabel(y)
 
-def plot_cat(df, y, xhue, ax, yhue=None, color=None, legend=True, fill=False, ** kwargs) :
+def plot_cat(df, y, xhue, ax, yhue=None, color=None, legend=True, fill=False, palette=None, ** kwargs) :
     # special plt function for cat plot
     if yhue :
         colors = {}
         for idx, group in enumerate(df.groupby(yhue)) :
             name, sdf = group
-            color = sns.color_palette()[idx]
+            color = palette[idx] if palette else sns.color_palette()[idx]
             plot_cat(sdf, y, xhue, ax, None, color, legend=legend, ** kwargs)
             colors[name] = color
 
@@ -96,12 +96,18 @@ def plot_cat(df, y, xhue, ax, yhue=None, color=None, legend=True, fill=False, **
             ax.legend(handles=elements)
 
     else :
+        idx_name = 0
         for name, sdf in df.groupby(xhue) :
+                        
+            if palette : 
+                color = palette[idx_name]
+                idx_name += 1
+
             custom_plt("gposi", y, sdf, ax, color=color, ** kwargs)
             if fill : ax.fill_between(sdf["gposi"], 0, sdf[y], alpha=.5)
 
 def cat_plot(x, y, xhue, data, ax, yhue=None, funsort=None, legend=True, tick_rot=0, background=False, start_zero=False,
-             xhue_size={}, bgcolor=None, fill=False, ** kwargs) :
+             xhue_size={}, bgcolor=None, fill=False, palette=None, ** kwargs) :
 
     df = data.copy()
     # remove rows for which we only have one row for a xhue (I don't remember why)
@@ -136,7 +142,7 @@ def cat_plot(x, y, xhue, data, ax, yhue=None, funsort=None, legend=True, tick_ro
     df["gposi"] = df.apply(lambda row : additionner[row[xhue]] + row[x], axis=1)
 
     # plot data
-    plot_cat(df[df["cat_show"] == True], y, xhue, ax, yhue, None, legend, fill, ** kwargs)
+    plot_cat(df[df["cat_show"] == True], y, xhue, ax, yhue, None, legend, fill, palette, ** kwargs)
 
     # add ticks and labels
     ticksinfo = [(name, (sdf["gposi"].min() + sdf["gposi"].max()) / 2.) for name, sdf in df.groupby(xhue)]
@@ -200,7 +206,7 @@ def barplot_twinx(left, right, data, ax, colors=None, width=.8, border_size=.5, 
     return (ax, ax2)
 
 def stacked_barplot(x, y, hue, data, ax, prop=False, sort_values=False, 
-    stack_order=None, palette=None, * args, ** kwargs) :
+    stack_order=None, palette=None, matrix=None, * args, ** kwargs) :
     
     ndf = pd.pivot_table(data, values=y, index=x, columns=hue)
     if prop : ndf = ndf.apply(lambda x : x / x.sum(), axis=1)
