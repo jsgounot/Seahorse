@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2018-05-16 13:53:18
 # @Last modified by:   jsgounot
-# @Last Modified time: 2018-11-14 16:38:27
+# @Last Modified time: 2019-01-30 18:55:13
 
 from numpy import isfinite, isnan, pi
 

@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2018-05-16 13:53:18
 # @Last modified by:   jsgounot
-# @Last Modified time: 2018-11-14 16:23:53
+# @Last Modified time: 2019-01-31 10:27:20
 
 # http://patorjk.com/software/taag/#p=display&v=3&f=Calvin%20S&t=barplot
 # Calvin S
@@ -17,9 +17,26 @@ from matplotlib.collections import PathCollection
 
 from scipy.optimize import curve_fit
 
-import seaborn as sns
-
 from seahorse import graph_utils, constants
+from seahorse.gwrap import sns
+
+"""
+╔═╗┬┌┬┐┌─┐┬  ┌─┐  ┌─┐┬  ┌─┐┌┬┐
+╚═╗││││├─┘│  ├┤   ├─┘│  │ │ │ 
+╚═╝┴┴ ┴┴  ┴─┘└─┘  ┴  ┴─┘└─┘ ┴
+"""
+
+def plot(x, y, data, ax, hue=None, palette=None, fill=0, ** kwargs) :
+    # Similar to pandas.plot (using behind) function but with the correct argument
+    # Meaning that you can use x, y and hue, and you don't have to transform the df before
+
+    # TODO : Manage the palette argument !
+
+
+    if hue : data = pd.pivot_table(data, index=x, values=y, columns=hue).fillna(fill)
+    else : data = data.set_index(x)[y]
+
+    data.plot(ax=ax, ** kwargs)
 
 """
 ╔═╗┌─┐┬  ┌─┐┬─┐┌─┐┌┬┐  ╦═╗┌─┐┌─┐┌─┐┬  ┌─┐┌┬┐
@@ -245,7 +262,8 @@ def dist_barplot(column, bin_size, data, ax, filler=None, colors=None, * args, *
     bins = bins.rename("count").to_frame().reset_index()
     sns.barplot(x="index", y="count", data=bins, ax=ax, color=colors, * args, ** kwargs)
 
-def barplot_huecolor(data, ax, hue, * args, colors=None, ** kwargs) :
+def barplot(data, ax, hue, * args, ** kwargs) :
+    colors = kwargs.pop("palette", None)
     sns.barplot(* args, data=data, ax=ax, ** kwargs)
     shues = sorted(data[hue].unique())
     hues = list(data[hue])
@@ -256,7 +274,8 @@ def barplot_huecolor(data, ax, hue, * args, colors=None, ** kwargs) :
 
     for idx, patch in enumerate(ax.patches) :
         hue = hues[idx]
-        color = colors[hue]
+        try : color = colors[hue]
+        except KeyError : raise KeyError("Hue color not found in the palette : '%s'" %(str(hue)))
         patch.set_color(color)
 
     graph_utils.add_custom_basic_legend(ax, shues, colors)
@@ -347,8 +366,58 @@ def non_linear_reg(fun, col1, col2, data, ax, kwargs_cfit={}, yvalues_plot=None,
 
     res = {estimator : popt[idx] for idx, estimator in enumerate("abc")}
     res["r2"] = r2
-    
-    res["nlr"] = res
     res["nlr_y"] = yvalues
 
     return res
+
+"""
+┌─┐┌─┐┌─┐┌┬┐┌┬┐┌─┐┬─┐┌─┐┬  ┌─┐┌┬┐
+└─┐│  ├─┤ │  │ ├┤ ├┬┘├─┘│  │ │ │ 
+└─┘└─┘┴ ┴ ┴  ┴ └─┘┴└─┴  ┴─┘└─┘ ┴ 
+"""
+
+def remove_non_number(df, columns) :
+    for column in columns :
+        df = df[np.isfinite(df[column])]
+    return df
+
+def scatterplot(data, ax, col1, col2, ccol=None, ccolname=None, hue=None, huecol=None, titlehue=True, 
+        kws_scatter={}, kwg_corr={}, ** kwg_regplot) :
+        
+    # To use until I change my seaborn version
+    # since they add a scatterplot function now : https://seaborn.pydata.org/generated/seaborn.scatterplot.html
+
+    df = data
+    df = remove_non_number(df, (col1, col2))
+
+    if ccol is not None :
+        # http://stackoverflow.com/questions/13943217/how-to-add-colorbars-to-scatterplots-created-like-this
+        cmap = sns.cubehelix_palette(light=.9, as_cmap=True)
+        df = remove_non_number(df, (ccol, ))
+        third_variable = df[ccol]
+        skws = {"c" : third_variable, "cmap" : cmap, "color" : None}
+        skws.update(kws_scatter)
+        sns.regplot(col1, col2, data=df, ax=ax, scatter_kws=skws, ** kwg_regplot)
+
+        outpathc = [child for child in ax.get_children()
+        if isinstance(child, PathCollection)][0]
+        cbar = plt.colorbar(mappable=outpathc, ax=ax)
+        ccolname = ccol if ccolname is None else ccolname
+        cbar.set_label(ccolname)
+
+    elif hue is not None:
+
+        color = kwg_regplot.pop("palette", None)
+        if color is not None and not huecol :
+            huecol = {hname : color[idx] for idx, hname in enumerate(df[hue].unique())}
+
+        for sname, sdf in df.groupby(hue) :
+            color = huecol[sname] if huecol and sname in huecol else None
+            sns.regplot(col1, col2, data=sdf, ax=ax, label=sname, color=color, ** kwg_regplot)
+        
+        ax.legend()
+
+    else :
+        sns.regplot(col1, col2, data=df, ax=ax, ** kwg_regplot)
+
+    return df[[col1, col2]].corr(** kwg_corr).iat[0,1]

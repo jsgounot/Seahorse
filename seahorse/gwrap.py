@@ -1,5 +1,6 @@
 import os
 import pylab as plt
+import numpy as np
 import seaborn as sns
 
 from seahorse import graphfun
@@ -17,7 +18,7 @@ class LibWrapper() :
 
     def __init__(self, lib, ** binds) :
         self.lib =   lib
-        self.binds = binds
+        self.binds = {key : value for key, value in binds.items() if value is not None}
 
     def __getattr__(self, funname) :
         if not hasattr(self.lib, funname) : 
@@ -43,7 +44,7 @@ class GraphsGroup() :
 class GBLibWrapper() :
 
     def __init__(self, lib, sc, iterator, bind_data=False, bind_axes=False, 
-        data_call=False, order=None, title_prefix=None, colors=None, cuse=None) :
+        data_call=False, order=None, title_prefix=None, colors=None, itcolors=True, cuse=None) :
         
         self.lib = lib
         self.sc = sc
@@ -56,6 +57,7 @@ class GBLibWrapper() :
         self.order = order
         self.title_prefix = title_prefix
         self.colors = colors if colors is not None else sns.color_palette()
+        self.itcolors = itcolors
         self.cuse = cuse
 
     def fun_wrap(self, funname, * args, ** kwargs) :
@@ -69,7 +71,7 @@ class GBLibWrapper() :
             try : ax = self.sc.ax(idx)
             except IndexError : raise IndexError("Not enought axes available")
             
-            if self.colors != False and "color" not in kwargs :
+            if self.itcolors and self.colors != False and "color" not in kwargs :
                 try : color = self.colors[idx]
                 except IndexError : color = self.colors
                 kwargs["color"] = color
@@ -176,7 +178,7 @@ class Fig() :
         self.fig.subplots_adjust(* args, ** kwargs)
 
     def gca(self, * args, ** kwargs) :
-        self.fig.gca(*args, **kwargs)
+        self.fig.gca(*args, ** kwargs)
 
     def show(self, * args, ** kwargs) :
         plt.show(self.fig, * args, ** kwargs)
@@ -188,7 +190,6 @@ class Fig() :
         if not tab : return
         fname = os.path.splitext(fname)[0] + ".tsv"
         self.data.to_csv(fname, sep="\t")
-
 
     def clear(self) :
         self.fig.clf()
@@ -218,12 +219,28 @@ class Graph(Fig) :
         self.shs = LibWrapper(graphfun, data = self.data, ax = self.ax)
 
     """
+    Global apply
+    """
+
+    def apply(self, fun, * args, ** kwargs) :
+        fun(self, * args, ** kwargs)
+
+    """
     Labels, title and ticks
     """
 
     def set_labels(self, xlabel=None, ylabel=None, ** kwargs) :
+        kwargs.setdefault("size", 15)
         if xlabel is not None : self.ax.set_xlabel(str(xlabel), ** kwargs)
         if ylabel is not None : self.ax.set_ylabel(str(ylabel), ** kwargs)
+
+    def set_xlabel(self, xlabel=None, ** kwargs) :
+        if kwargs and not xlabel : xlabel = self.ax.get_xlabel()
+        self.ax.set_xlabel(xlabel, ** kwargs)
+
+    def set_ylabel(self, ylabel=None, ** kwargs) :
+        if kwargs and not ylabel : ylabel = self.ax.get_ylabel()
+        self.ax.set_ylabel(ylabel, ** kwargs)        
 
     def transform_title(self, fun_names={}, ** kwargs) :
         fun = lambda x : fun_names.get(x, x) if isinstance(fun_names, dict) else fun_names
@@ -286,6 +303,12 @@ class Graph(Fig) :
         if l is None : return
         getattr(l, fun)(* args, ** kwargs)
 
+    def legend_outside(self, ** kwargs) :
+        kwargs.setdefault("loc", "upper left")
+        kwargs.setdefault("bbox_to_anchor", (1, 1))
+        kwargs.setdefault("prop", {"size" : 15})
+        self.set_legend(** kwargs)
+
     """
     Scale
     """
@@ -334,6 +357,27 @@ class Graph(Fig) :
     def adjust_margins(self, prc_margin=0.01) :
         self.adjust_vert_margins(prc_margin)
         self.adjust_hori_margins(prc_margin)
+
+    """
+    barplot
+    """
+
+    def barplot_add_value(self, asint=False, rotation=0, asprc=False, both=False, kwg_text={}, fntxt=lambda x : x, idxs=None) :
+        spacer = self.ax.get_ylim()[1] * 2/100.
+        sum_v = float(sum([p.get_height() for p in self.ax.patches]))
+        patches = sorted(self.ax.patches, key = lambda patch : patch.get_x())
+
+        for idx, p in enumerate(patches) :
+            if idxs and idx not in idxs : continue
+
+            height = p.get_height()
+            height_name = str(int(height)) if asint and not np.isnan(height) else height
+            height_name = "%.1f" %(height * 100 / sum_v) if asprc else height_name
+            height_name = height_name + "\n(%.1f" %(height * 100 / sum_v) + "%)" if both else height_name
+            height_name = fntxt(height_name)
+            x = p.get_x() + p.get_width() / 2.
+            self.ax.text(x, height + spacer, str(height_name), ha="center",
+            va="bottom", rotation=rotation, **kwg_text)
 
 class SubplotsContainer(Fig) :
     
@@ -438,14 +482,17 @@ class SubplotsContainer(Fig) :
             elif ax in ax_bottom : ax.set_ylabel("")
             else : ax.set_ylabel(""); ax.set_xlabel("")
 
-    def force_sharex(self) :
+    def clean_xticks_bottom(self) :
         ax_bottom = self.get_axes_edge(bottom=True)
+        for ax in self.axes :
+            if ax not in ax_bottom : 
+                ax.set_xticklabels(["" for _ in ax.get_xticklabels()])
+
+    def force_sharex(self) :
         min_xlim = min(min(ax.get_xlim()) for ax in self.axes)
         max_xlim = max(max(ax.get_xlim()) for ax in self.axes)
-
-        for ax in self.axes :
-            ax.set_xlim((min_xlim, max_xlim))
-            if ax not in ax_bottom : ax.set_xticklabels(["" for _ in ax.get_xticklabels()])
+        for ax in self.axes : ax.set_xlim((min_xlim, max_xlim))
+        self.clean_xticks_bottom()        
 
     def force_sharey(self) :
         ax_left = self.get_axes_edge(left=True)
@@ -466,7 +513,7 @@ class SubplotsContainer(Fig) :
 
     def _set_labels_main(self, xlabel=None, ylabel=None, ** kwargs) :
         if xlabel : self.ax_labels.set_xlabel(xlabel, ** kwargs)
-        if ylabel : self.ax_labels.set_xlabel(ylabel, ** kwargs)
+        if ylabel : self.ax_labels.set_ylabel(ylabel, ** kwargs)
 
     def _set_labels_sub(self, xlabel=None, ylabel=None, ** kwargs) :
         ax_left = self.get_axes_edge(left=True)
