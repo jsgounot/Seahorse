@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2018-12-21 10:49:13
 # @Last modified by:   jsgounot
-# @Last Modified time: 2019-01-11 16:02:51
+# @Last Modified time: 2019-02-04 16:04:32
 
 import numpy as np
 from seahorse.gwrap import sns
@@ -11,7 +11,8 @@ import matplotlib.gridspec as gridspec
 
 class ScatterDist(Fig) :
     def __init__(self, df, c1, c2, hue=None, kwargs_scatter={}, kwargs_dist={}, method="violinplot",
-                 spacers=(.1, .1), boxratio=[(3,1), (1,3)], size=12, fillna=None, colors=None) :
+                 spacers=(.1, .1), boxratio=[(3,1), (1,3)], size=12, fillna=None, colors=None,
+                 xlim=None, ylim=None) :
         
         self.df = df
 
@@ -25,7 +26,7 @@ class ScatterDist(Fig) :
 
         self.create_fig()
         self.init_ui(boxratio, spacers, size)
-        self.draw_scatter(c1, c2, ** kwargs_scatter)
+        self.draw_scatter(c1, c2, xlim, ylim, ** kwargs_scatter)
         self.draw_dists(c1, c2, method, ** kwargs_dist)
 
         self.data = df
@@ -59,9 +60,11 @@ class ScatterDist(Fig) :
         self.ax_scatter = self.fig.add_subplot(gs[2])
         self.set_square(size)
 
-    def draw_scatter(self, c1, c2, ** kwargs) :
+    def draw_scatter(self, c1, c2, xlim=None, ylim=None, ** kwargs) :
         graph = Graph(ax=self.ax_scatter, data=self.df)
-        graph.shs.scatterplot(col1=c1, col2=c2, fit_reg=False, ** kwargs)
+        kwargs = {"fit_reg" : False, ** kwargs}
+        graph.shs.scatterplot(col1=c1, col2=c2, ** kwargs)
+        graph.set_ax_lim(xlim, ylim)
 
     def draw_dists(self, c1, c2, method, ** kwargs) :
         
