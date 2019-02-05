@@ -11,7 +11,9 @@ This lib was designed for my personnal use and does not intend to fullfill every
 - Include new basic plot functions such as stacked barplot, circular barplot, non linear regressions ...
 - Include new high level plot functions such as PyUpset or scatter distribution
 
-Example :
+### Examples
+
+**Custom container** :
 
 ```python3
 
@@ -30,7 +32,21 @@ sc.graph(1).set_labels("Total bill", "")
 
 ![Example image](https://github.com/jsgounot/Seahorse/blob/master/Examples/scontainer.png)
 
-Another example :
+**Groupby Container** :
+
+```python3
+
+from seahorse import gwrap, SContainer
+
+df = gwrap.sns.load_dataset("tips")
+sc = SContainer(df, 2, 2)
+sc.groupby("day").sns.regplot("total_bill", "tip", color="black", scatter_kws={'s' : 8})
+
+```
+
+![Example image](https://github.com/jsgounot/Seahorse/blob/master/Examples/scontainer_gb.png)
+
+**PyUpset** :
 
 ```python3
 
