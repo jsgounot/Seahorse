@@ -1,4 +1,4 @@
-import os
+import os, copy
 import pylab as plt
 import numpy as np
 import seaborn as sns
@@ -20,11 +20,21 @@ class LibWrapper() :
         self.lib =   lib
         self.binds = {key : value for key, value in binds.items() if value is not None}
 
+    def launch_fun(self, funname, * args, ** kwargs) :
+        binds = copy.copy(self.binds)
+        
+        if "cuse" in kwargs :
+            cuse = kwargs.pop("cuse", None)
+            if cuse and "data" in binds : binds["data"] = binds["data"][cuse]
+            if not cuse : binds.pop("data", None)
+
+        return getattr(self.lib, funname)(* args, ** binds, ** kwargs)
+
     def __getattr__(self, funname) :
         if not hasattr(self.lib, funname) : 
             raise AttributeError("No function found : '%s'" %funname)
-       
-        return lambda * args, ** kwargs : getattr(self.lib, funname)(* args, ** self.binds, ** kwargs)
+
+        return lambda * args, ** kwargs : self.launch_fun(funname, * args, ** kwargs)
 
 class GraphsGroup() :
 
