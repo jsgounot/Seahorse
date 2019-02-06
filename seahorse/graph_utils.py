@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2018-05-16 13:53:18
 # @Last modified by:   jsgounot
-# @Last Modified time: 2019-01-30 18:55:13
+# @Last Modified time: 2019-02-06 11:18:25
 
 from numpy import isfinite, isnan, pi
 
@@ -127,7 +127,7 @@ def basic_legend(ax, names_color, * args, ** kwargs) :
     handle = [Patch(facecolor=color, edgecolor=color, label=name)
         for name, color in names_color.items()]
     
-    ax.legend(handles=handle)
+    ax.legend(handles=handle, * args, ** kwargs)
 
 def add_custom_basic_legend(ax, names, palette=None, ** kwargs) :
     palette = sns.color_palette() if palette is None else palette

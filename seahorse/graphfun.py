@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2018-05-16 13:53:18
 # @Last modified by:   jsgounot
-# @Last Modified time: 2019-01-31 10:27:20
+# @Last Modified time: 2019-02-06 11:18:36
 
 # http://patorjk.com/software/taag/#p=display&v=3&f=Calvin%20S&t=barplot
 # Calvin S
@@ -421,3 +421,86 @@ def scatterplot(data, ax, col1, col2, ccol=None, ccolname=None, hue=None, huecol
         sns.regplot(col1, col2, data=df, ax=ax, ** kwg_regplot)
 
     return df[[col1, col2]].corr(** kwg_corr).iat[0,1]
+
+"""
+╔═╗╔═╗┬  ┌─┐┌┬┐
+║ ╦╠═╝│  │ │ │ 
+╚═╝╩  ┴─┘└─┘ ┴
+"""
+
+def gplot(data, ax, start="start", end="end", strand=None, kind=None, name=None, legend=True, palette={}, kwargs_arrow={}, kwargs_text={}) :
+    
+    df = data
+
+    kwargs_arrow = {
+        "length_includes_head" : True,
+        "width" : .5,
+        "head_width" : .5,
+        ** kwargs_arrow
+    }
+
+    pmin = min((df[start].min(), df[end].min()))
+    pmax = max((df[start].max(), df[end].max()))
+
+    if kind : palette = palette or gplot_default_cpal(df, kind)
+    tracks = []
+
+    for idx, row in data.iterrows() :
+        fstart, fend = row[start], row[end]
+        if fstart > fend : fstart, fend = fend, fstart
+        fstrand = row.get(strand, strand)
+        track_idx = find_track(tracks, fstart, fend)
+
+        fkind = row.get(kind, kind)
+        color = palette.get(fkind, None)
+        fname = row.get(name, name)
+
+        plot_feature(ax, fstart, fend, fstrand, fname, color, track_idx, kwargs_arrow, kwargs_text)
+  
+    ax.set_xlim((pmin, pmax))
+    ax.set_ylim((-.5, len(tracks)))
+    ax.set_yticks([])
+
+    if palette and legend :
+        graph_utils.basic_legend(ax, palette, loc=2)
+
+def gplot_default_cpal(df, kind) :
+    cpal = sns.color_palette()
+    return {kind : cpal[idx] for idx, kind in enumerate(sorted(df[kind].unique()))}
+
+def find_track(tracks, start, end) :
+
+    idx = - 1
+    for idx, track in enumerate(tracks) :
+        found = False 
+
+        for feature in track :
+            fstart, fend = feature
+            
+            if fstart <= start <= fend or fstart <= end <= fend :
+                found = True
+                break
+
+        if not found :
+            track.append((start, end))
+            return idx
+
+    tracks.append([(start, end)])
+    return idx + 1
+
+def plot_feature(ax, start, end, strand, name, color, track_idx, kwargs_arrow, kwargs_text) :
+    
+    size = end - start
+    headlen = size * .2 
+    center = (start + size / 2)
+
+    x = start if strand == "+" else end
+    dx = size if strand == "+" else - size
+
+    color = color or constants.DEFAULT_COLOR
+
+    ax.arrow(x, track_idx, dx, 0, head_length=headlen, color=color, ** kwargs_arrow)
+
+    if name :
+        ax.text(center, track_idx + .5, name, color="black", 
+            horizontalalignment="center", verticalalignment="center", ** kwargs_text)
