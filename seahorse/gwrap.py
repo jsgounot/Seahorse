@@ -10,6 +10,9 @@ from matplotlib.figure import Figure
 import matplotlib.gridspec as gridspec
 from matplotlib.ticker import FuncFormatter
 
+class SHException(Exception) :
+    pass
+
 class LibWrapper() :
 
     """
@@ -464,7 +467,8 @@ class SubplotsContainer(Fig) :
         return self.fig.add_subplot(ss, ** kwargs)
 
     def get_ax(self, sterm) :
-        ss = self.gs[self.used_gs].__getitem__(sterm)
+        try : ss = self.gs[self.used_gs].__getitem__(sterm)
+        except IndexError : raise SHException("Axes index doesn't exist. You subplot properties might be wrong.")
         ax = self.add_subplot(ss)
         self._axes.setdefault(self.used_gs, []).append(ax)
         return ax
