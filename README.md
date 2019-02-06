@@ -11,6 +11,22 @@ This lib was designed for my personnal use and does not intend to fullfill every
 - Include new basic plot functions such as stacked barplot, circular barplot, non linear regressions ...
 - Include new high level plot functions such as PyUpset or scatter distribution
 
+### Installation
+
+Using pip
+
+```bash
+pip install git+https://github.com/jsgounot/Seahorse.git
+```
+
+Or download / clone the github
+
+```bash
+git clone https://github.com/jsgounot/Seahorse.git
+cd Seahorse
+python setup.py install --user
+```
+
 ### Examples
 
 **Custom container** :
