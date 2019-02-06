@@ -417,12 +417,22 @@ class SubplotsContainer(Fig) :
 
     @property
     def axes(self) :
-        return self._axes.get(self.used_gs, [])
+        return self._axes.get(self.used_gs, {})
 
+    @property
+    def faxes(self):
+        # flatten and filled ax with None
+        if not self.axes : return []
+        return [self.axes.get(idx, None) for idx in range(max(self.axes) + 1)]
+    
+    @property
+    def nffaxes(self):
+        # non filled flatten ax
+        return [ax for ax in self.faxes if ax is not None]
+    
     def ax(self, idx) :
         try : return self.axes[idx]
-        except IndexError : return self.get_ax(idx)
-        except TypeError : return self.get_ax(idx)
+        except KeyError : return self.get_ax(idx)
 
     def graph(self, idx, data=None) :
         data = self.data if data is None else data
@@ -431,13 +441,14 @@ class SubplotsContainer(Fig) :
     def get_axes_edge(self, top=False, bottom=False, left=False, right=False) :
         ncols = self.current_gs_shape[1]
         axes_list = []
+        faxes = self.faxes
 
-        if top : axes_list += self.axes[:ncols]
-        if bottom : axes_list += self.axes[- ncols:]
-        if left : axes_list += self.axes[::ncols]
-        if right : axes_list += self.axes[::-ncols][::-1]
+        if top : axes_list += faxes[:ncols]
+        if bottom : axes_list += faxes[- ncols:]
+        if left : axes_list += faxes[::ncols]
+        if right : axes_list += faxes[::-ncols][::-1]
 
-        return axes_list
+        return [ax for ax in axes_list if ax is not None]
 
     def get_graph_top_right(self) :
         return Graph(self.data, self.get_axes_edge(top=True)[-1])
@@ -458,19 +469,19 @@ class SubplotsContainer(Fig) :
         return GroupByPlotter(self.data, self, hue, ** kwargs)
 
     def apply(self, graph=True) :
-        return GraphsGroup(self.axes, graph)
+        return GraphsGroup(self.nffaxes, graph)
 
     def add_subplot(self, ss) :
         kwargs = {}
-        if self.sharex and self.axes : kwargs["sharex"] = self.axes[0]
-        if self.sharey and self.axes : kwargs["sharey"] = self.axes[0]
+        if self.sharex and self.nffaxes : kwargs["sharex"] = self.nffaxes[0]
+        if self.sharey and self.nffaxes : kwargs["sharey"] = self.nffaxes[0]
         return self.fig.add_subplot(ss, ** kwargs)
 
     def get_ax(self, sterm) :
         try : ss = self.gs[self.used_gs].__getitem__(sterm)
         except IndexError : raise SHException("Axes index doesn't exist. You subplot properties might be wrong.")
         ax = self.add_subplot(ss)
-        self._axes.setdefault(self.used_gs, []).append(ax)
+        self._axes.setdefault(self.used_gs, {})[sterm] = ax
         return ax
 
     def add_gs(self, name, * args, ** kwargs) :
@@ -490,7 +501,7 @@ class SubplotsContainer(Fig) :
         ax_left = self.get_axes_edge(left=True)
         ax_bottom = self.get_axes_edge(bottom=True)
 
-        for ax in self.axes :
+        for ax in self.nffaxes :
             if ax in ax_left and ax in ax_bottom : continue
             elif ax in ax_left : ax.set_xlabel("")
             elif ax in ax_bottom : ax.set_ylabel("")
@@ -498,22 +509,22 @@ class SubplotsContainer(Fig) :
 
     def clean_xticks_bottom(self) :
         ax_bottom = self.get_axes_edge(bottom=True)
-        for ax in self.axes :
+        for ax in self.nffaxes :
             if ax not in ax_bottom : 
                 ax.set_xticklabels(["" for _ in ax.get_xticklabels()])
 
     def force_sharex(self) :
-        min_xlim = min(min(ax.get_xlim()) for ax in self.axes)
-        max_xlim = max(max(ax.get_xlim()) for ax in self.axes)
-        for ax in self.axes : ax.set_xlim((min_xlim, max_xlim))
+        min_xlim = min(min(ax.get_xlim()) for ax in self.nffaxes)
+        max_xlim = max(max(ax.get_xlim()) for ax in self.nffaxes)
+        for ax in self.nffaxes : ax.set_xlim((min_xlim, max_xlim))
         self.clean_xticks_bottom()        
 
     def force_sharey(self) :
         ax_left = self.get_axes_edge(left=True)
-        min_ylim = min(min(ax.get_ylim()) for ax in self.axes)
-        max_ylim = max(max(ax.get_ylim()) for ax in self.axes)
+        min_ylim = min(min(ax.get_ylim()) for ax in self.nffaxes)
+        max_ylim = max(max(ax.get_ylim()) for ax in self.nffaxes)
 
-        for ax in self.axes :
+        for ax in self.nffaxes :
             ax.set_ylim((min_ylim, max_ylim))
             if ax not in ax_left : ax.set_yticklabels(["" for _ in ax.get_yticklabels()])
 
@@ -533,7 +544,7 @@ class SubplotsContainer(Fig) :
         ax_left = self.get_axes_edge(left=True)
         ax_bottom = self.get_axes_edge(bottom=True)
 
-        for ax in self.axes :
+        for ax in self.nffaxes :
             ax_xlabel = xlabel if ax in ax_bottom else ""
             ax_ylabel = ylabel if ax in ax_left else ""
 
@@ -544,7 +555,7 @@ class SubplotsContainer(Fig) :
         ax_bottom = self.get_axes_edge(bottom=True)
         fun = lambda x : ""
 
-        for ax in self.axes :
+        for ax in self.nffaxes :
             if ax not in ax_bottom :
                 graph = Graph(ax=ax)
                 graph.transform_xticks(fun, which=which)
@@ -556,7 +567,7 @@ class SubplotsContainer(Fig) :
             kwargs.setdefault("bbox_to_anchor", (1, 1))
             kwargs.setdefault("prop", {"size" : 15})
 
-        for idx, ax in enumerate(self.axes) :
+        for idx, ax in enumerate(self.nffaxes) :
             if idx == index :
                 self.graph(idx).set_legend(** kwargs)
             else :
