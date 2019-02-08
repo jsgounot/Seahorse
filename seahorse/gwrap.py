@@ -20,7 +20,7 @@ class LibWrapper() :
     """
 
     def __init__(self, lib, ** binds) :
-        self.lib =   lib
+        self.lib = lib
         self.binds = {key : value for key, value in binds.items() if value is not None}
 
     def launch_fun(self, funname, * args, ** kwargs) :
@@ -35,7 +35,8 @@ class LibWrapper() :
 
     def __getattr__(self, funname) :
         if not hasattr(self.lib, funname) : 
-            raise AttributeError("No function found : '%s'" %funname)
+            if constants.DEBUG : print (self.lib, funname)
+            raise AttributeError("No function found : '%s'" %(funname))
 
         return lambda * args, ** kwargs : self.launch_fun(funname, * args, ** kwargs)
 
