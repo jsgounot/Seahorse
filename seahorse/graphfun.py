@@ -2,11 +2,12 @@
 # @Author: jsgounot
 # @Date:   2018-05-16 13:53:18
 # @Last modified by:   jsgounot
-# @Last Modified time: 2019-02-06 11:28:51
+# @Last Modified time: 2019-02-22 09:49:25
 
 # http://patorjk.com/software/taag/#p=display&v=3&f=Calvin%20S&t=barplot
 # Calvin S
 
+import itertools
 from math import pi, degrees
 
 import pylab as plt
@@ -19,6 +20,7 @@ from scipy.optimize import curve_fit
 
 from seahorse import graph_utils, constants
 from seahorse.gwrap import sns
+from seahorse.custom.vennplot import venn_df, venn_dic
 
 """
 ╔═╗┬┌┬┐┌─┐┬  ┌─┐  ┌─┐┬  ┌─┐┌┬┐
@@ -26,7 +28,7 @@ from seahorse.gwrap import sns
 ╚═╝┴┴ ┴┴  ┴─┘└─┘  ┴  ┴─┘└─┘ ┴
 """
 
-def plot(x, y, data, ax, hue=None, palette=None, fill=0, ** kwargs) :
+def plot(x, y, data, ax, hue=None, palette=None, fill=0, fbeetween=None, ** kwargs) :
     # Similar to pandas.plot (using behind) function but with the correct argument
     # Meaning that you can use x, y and hue, and you don't have to transform the df before
 
@@ -36,7 +38,11 @@ def plot(x, y, data, ax, hue=None, palette=None, fill=0, ** kwargs) :
     if hue : data = pd.pivot_table(data, index=x, values=y, columns=hue).fillna(fill)
     else : data = data.set_index(x)[y]
 
-    data.plot(ax=ax, ** kwargs)
+    print (data)
+    print (kwargs)
+
+    r = data.plot(ax=ax, ** kwargs)
+
 
 """
 ╔═╗┌─┐┬  ┌─┐┬─┐┌─┐┌┬┐  ╦═╗┌─┐┌─┐┌─┐┬  ┌─┐┌┬┐
@@ -186,6 +192,20 @@ def cat_plot(x, y, xhue, data, ax, yhue=None, funsort=None, legend=True, tick_ro
     return df.groupby(xhue).min()["gposi"].to_dict()
 
 """
+┬┌─┌┬┐┌─┐┌─┐┬  ┌─┐┌┬┐
+├┴┐ ││├┤ ├─┘│  │ │ │ 
+┴ ┴─┴┘└─┘┴  ┴─┘└─┘ ┴ 
+"""
+
+def kdeplothue(data, ax, hue, value, palette=None, ** kwargs) :
+
+    for huen, sdf in data.groupby(hue) :
+        sdf = sdf[value]
+        sns.kdeplot(data=sdf, ax=ax, ** kwargs)
+
+    ax.legend()
+
+"""
 ┌┐ ┌─┐┬─┐┌─┐┬  ┌─┐┌┬┐
 ├┴┐├─┤├┬┘├─┘│  │ │ │ 
 └─┘┴ ┴┴└─┴  ┴─┘└─┘ ┴ 
@@ -247,7 +267,43 @@ def stacked_barplot(x, y, hue, data, ax, prop=False, sort_values=False,
         colors = None
 
     if "color" in kwargs : kwargs.pop("color")
-    ndf.plot.bar(stacked=True, ax=ax, colors=colors, * args, ** kwargs)
+    ndf.plot(* args, kind="bar", stacked=True, ax=ax, colors=colors, ** kwargs)
+
+def stacked_barplot_diff(x, y, hue, data, ax, aggfunc=None, palette=None, ** kwargs) :
+
+    df, dfs = data, {}
+    aggfunc = aggfunc or np.mean
+    palette = palette or sns.color_palette()
+
+    if isinstance(palette, dict) : palette = {nhue : palette[nhue] for nhue in sorted(df[hue].unique())}
+    else : palette = {nhue : palette[idx] for idx, nhue in enumerate(sorted(df[hue].unique()))}
+
+    for name, sdf in df.groupby(x) :
+        serie = sdf.groupby(hue)[y].apply(aggfunc)
+        serie = serie.sort_values()
+        index = tuple(serie.index)
+        serie = serie.diff().fillna(serie.min())
+        
+        sdf = serie.rename(y).reset_index()
+        sdf[x] = name
+        dfs.setdefault(index, []).append(sdf)
+
+    zero_df = pd.concat(itertools.chain(* dfs.values()))
+    zero_df[y] = 0
+    start = True
+
+    x = [x] if not isinstance(x, list) else x
+    hue = [hue] if not isinstance(hue, list) else hue
+
+    for hueorder, sdfs in dfs.items() :
+        df = pd.concat(sdfs)
+        df = pd.concat((df, zero_df)).drop_duplicates(x + hue).sort_values(x + hue)
+
+        legend = start
+        start = False
+        
+        stacked_barplot(x=x, y=y, hue=hue, data=df, stack_order=list(hueorder), 
+            palette=palette, ax=ax, legend=legend, ** kwargs)
 
 def dist_barplot(column, bin_size, data, ax, filler=None, colors=None, * args, ** kwargs) :
     colors = colors or constants.DEFAULT_COLOR
