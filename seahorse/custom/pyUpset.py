@@ -154,6 +154,7 @@ class PyUpset(seahorse.Fig) :
         df = df.reindex(self.names)
 
         df.plot.barh(ax=self.ax_dist_barplot, color=bcolor)
+        self.ax_dist_barplot.set_facecolor('white')
         self.ax_dist_barplot.invert_xaxis()
         self.ax_dist_barplot.set_xlabel("Set size", size=lsize)
         self.ax_dist_barplot.set_ylabel("")

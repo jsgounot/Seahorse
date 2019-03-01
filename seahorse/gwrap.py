@@ -1,11 +1,13 @@
 import os, copy
 import pylab as plt
 import numpy as np
+import pandas as pd
 import seaborn as sns
 
 from seahorse import graphfun
 from seahorse import constants
 
+from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.figure import Figure
 import matplotlib.gridspec as gridspec
 from matplotlib.ticker import FuncFormatter
@@ -118,27 +120,40 @@ class GBLibWrapper() :
 
 class GroupByPlotter() :
 
-    def __init__(self, df, sc, hue, ignore_empty=True, ** kwargs) :
+    def __init__(self, df, sc, hue, ignore_empty=True,
+        clean_cat=False, ** kwargs) :
 
         self.df = df
         self.sc = sc
         self.hue = hue
 
-        self.iterator = self.make_iterator(df, hue, ignore_empty)
+        self.iterator = self.make_iterator(df, hue, ignore_empty, clean_cat)
 
         self.shs = GBLibWrapper(graphfun, sc, self.iterator, True, True, False, ** kwargs)
         self.sns = GBLibWrapper(sns, sc, self.iterator, True, True, False, ** kwargs)
         self.df = GBLibWrapper(None, sc, self.iterator, True, True, True, ** kwargs)
 
-    def make_iterator(self, df, hue, ignore_empty) :
+    @staticmethod
+    def clean_cat(subdf) :
+        
+        for column in subdf.select_dtypes(include=['category']) :
+            found_values = set(subdf[column].unique())
+            used_categories = [cat for cat in subdf[column].cat.categories if cat in found_values]
+            subdf[column] = pd.Categorical(subdf[column], categories=used_categories)
+
+        return subdf
+
+    def make_iterator(self, df, hue, ignore_empty, clean_cat) :
 
         if ignore_empty :
             iterator = ((name, sdf) for name, sdf in df.groupby(hue) if not sdf.empty)
+        
         else :
             iterator = df.groupby(hue)
 
         for idx, group in enumerate(iterator) :
             name, subdf = group
+            if clean_cat : subdf = GroupByPlotter.clean_cat(subdf)
             try : name = " - ".join(name) if not isinstance(name, str) else name
             except : name = str(name)
             yield idx, name, subdf
@@ -203,7 +218,17 @@ class Fig() :
 
         if not tab : return
         fname = os.path.splitext(fname)[0] + ".tsv"
-        self.data.to_csv(fname, sep="\t")
+        
+        # for some graph object (such as PyUpset) we don't store data
+        try : self.data.to_csv(fname, sep="\t")
+        except AttributeError : pass
+
+    @staticmethod
+    def save_pdfs(fname, figs, * args, ** kwargs) :
+        kwargs = {"dpi":120, "alpha":0.5, ** kwargs}
+        with PdfPages(fname) as pdf :
+            for fig in figs :
+                pdf.savefig(fig.fig, * args, ** kwargs)
 
     def clear(self) :
         self.fig.clf()
@@ -573,3 +598,4 @@ class SubplotsContainer(Fig) :
                 self.graph(idx).set_legend(** kwargs)
             else :
                 self.graph(idx).remove_legend()
+

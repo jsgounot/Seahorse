@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2018-05-16 13:53:18
 # @Last modified by:   jsgounot
-# @Last Modified time: 2019-02-22 09:49:25
+# @Last Modified time: 2019-02-28 17:08:08
 
 # http://patorjk.com/software/taag/#p=display&v=3&f=Calvin%20S&t=barplot
 # Calvin S
@@ -243,7 +243,7 @@ def barplot_twinx(left, right, data, ax, colors=None, width=.8, border_size=.5, 
     return (ax, ax2)
 
 def stacked_barplot(x, y, hue, data, ax, prop=False, sort_values=False, 
-    stack_order=None, palette=None, matrix=None, * args, ** kwargs) :
+        stack_order=None, palette=None, ignore=[], * args, ** kwargs) :
     
     ndf = pd.pivot_table(data, values=y, index=x, columns=hue)
     if prop : ndf = ndf.apply(lambda x : x / x.sum(), axis=1)
@@ -251,6 +251,10 @@ def stacked_barplot(x, y, hue, data, ax, prop=False, sort_values=False,
 
     if stack_order :
         ndf = ndf[stack_order]
+
+    if ignore :
+        used = [column for column in ndf.columns if column not in ignore]
+        ndf = ndf[used]
 
     if sort_values and not prop : 
         if isinstance(sort_values, Iterable) :
@@ -267,7 +271,7 @@ def stacked_barplot(x, y, hue, data, ax, prop=False, sort_values=False,
         colors = None
 
     if "color" in kwargs : kwargs.pop("color")
-    ndf.plot(* args, kind="bar", stacked=True, ax=ax, colors=colors, ** kwargs)
+    ndf.plot(* args, kind="bar", stacked=True, ax=ax, color=colors, ** kwargs)
 
 def stacked_barplot_diff(x, y, hue, data, ax, aggfunc=None, palette=None, ** kwargs) :
 
