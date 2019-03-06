@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2018-12-20 13:35:31
 # @Last modified by:   jsgounot
-# @Last Modified time: 2019-03-06 16:48:17
+# @Last Modified time: 2019-03-06 17:34:01
 
 import pandas as pd
 from seahorse import Graph
@@ -10,7 +10,7 @@ from seahorse.gwrap import sns, Fig
 
 class ClusterMap(Fig) :
 
-    def __init__(self, * args, rotatey=True, rotatex=True, ** kwargs) :
+    def __init__(self, * args, rotatey=True, rotatex=True, rm_yticks=False, ** kwargs) :
         
         self.run_cmap(* args, ** kwargs)
 
@@ -21,7 +21,8 @@ class ClusterMap(Fig) :
         try : self.raw_data = kwargs["data"]
         except KeyError : self.raw_data = args[0]
 
-        graph = self.main_graph
+        graph = self.heatmap_graph
+        if rm_yticks : graph.transform_yticks(lambda tick : "")
         if rotatex : graph.transform_xticks(rotation=90)
         if rotatey : graph.transform_yticks(rotation=0)
 
@@ -31,7 +32,7 @@ class ClusterMap(Fig) :
         self.clusterobj = sns.clustermap(* args, ** kwargs)
 
     @property
-    def main_graph(self):
+    def heatmap_graph(self):
         return Graph(ax=self.heatmap_ax)
     
     @property
@@ -75,7 +76,7 @@ class GenomeMap(ClusterMap) :
 
         super().__init__(* args, ** kwargs)
 
-        if use_chroname : self.main_graph.set_xticks(* list(zip(* self.ticksinfo)), rotation=45)
+        if use_chroname : self.heatmap_graph.set_xticks(* list(zip(* self.ticksinfo)), rotation=45)
         self.set_lines(xhue, ** kwargs_line)
 
     def transform_data(self, data, x, y, xhue, value, na_value) :
