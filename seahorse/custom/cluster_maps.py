@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2018-12-20 13:35:31
 # @Last modified by:   jsgounot
-# @Last Modified time: 2019-03-06 17:34:01
+# @Last Modified time: 2019-03-06 18:45:59
 
 import pandas as pd
 from seahorse import Graph
@@ -22,7 +22,7 @@ class ClusterMap(Fig) :
         except KeyError : self.raw_data = args[0]
 
         graph = self.heatmap_graph
-        if rm_yticks : graph.transform_yticks(lambda tick : "")
+        if rm_yticks : graph.remove_yticks()
         if rotatex : graph.transform_xticks(rotation=90)
         if rotatey : graph.transform_yticks(rotation=0)
 

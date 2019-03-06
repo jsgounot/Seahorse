@@ -332,7 +332,21 @@ class Graph(Fig) :
             except ValueError :
                 labels.append(text)
 
-        self.ax.set_xticklabels(labels, *args, **kwargs)
+        self.ax.set_xticklabels(labels, * args, ** kwargs)
+
+    def remove_xticks(self, ** kwargs) :
+        kwargs = {"axis" : "x", "which" : "both", "bottom" : False,
+            "top" : False, "labelbottom" : False, "labeltop" : False, 
+            ** kwargs}
+        
+        self.ax.tick_params(** kwargs)
+
+    def remove_yticks(self, ** kwargs) :
+        kwargs = {"axis" : "y", "which" : "both", "right" : False,
+            "left" : False, "labelleft" : False, "labelright" : False, 
+            ** kwargs}
+        
+        self.ax.tick_params(** kwargs)
 
     """
     Legends
