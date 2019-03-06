@@ -1,5 +1,5 @@
 from seahorse.gwrap import Fig
-from seahorse.gwrap import Graph
+from seahorse.gwrap import BrokenGraph, Graph
 from seahorse.gwrap import SubplotsContainer as SContainer
 from seahorse.graph_utils import *
 

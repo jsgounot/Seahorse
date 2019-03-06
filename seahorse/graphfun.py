@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2018-05-16 13:53:18
 # @Last modified by:   jsgounot
-# @Last Modified time: 2019-02-28 17:08:08
+# @Last Modified time: 2019-03-06 16:52:01
 
 # http://patorjk.com/software/taag/#p=display&v=3&f=Calvin%20S&t=barplot
 # Calvin S
@@ -21,6 +21,7 @@ from scipy.optimize import curve_fit
 from seahorse import graph_utils, constants
 from seahorse.gwrap import sns
 from seahorse.custom.vennplot import venn_df, venn_dic
+
 
 """
 ╔═╗┬┌┬┐┌─┐┬  ┌─┐  ┌─┐┬  ┌─┐┌┬┐
@@ -564,3 +565,52 @@ def plot_feature(ax, start, end, strand, name, color, track_idx, kwargs_arrow, k
     if name :
         ax.text(center, track_idx + .5, name, color="black", 
             horizontalalignment="center", verticalalignment="center", ** kwargs_text)
+
+"""
+╦ ╦┌─┐┌─┐┌┬┐┌┬┐┌─┐┌─┐
+╠═╣├┤ ├─┤ │ │││├─┤├─┘
+╩ ╩└─┘┴ ┴ ┴ ┴ ┴┴ ┴┴  
+"""
+
+class PairwiseHeatmap() :
+
+    # It is NOT a graph object but simply
+    # a simple object to make the code cleaner
+    # instead of putting everythin inside a function
+    # use pairwise_heatmap function if you want to use it
+
+    def __init__(self, data, key, value, ax, intersection=True, ** kwargs) :
+
+        self.df = data
+        self.key = key
+        self.value = value
+        self.ax = ax
+
+        self.sim = self.get_sim(intersection)
+        self.plot(self.sim, ** kwargs)
+
+    def get_sim(self, intersection) :
+
+        groups = sorted(self.df[self.value].unique())
+        values = np.zeros((len(groups), len(groups)), dtype=int)
+        get_keys = lambda x : set(self.df[self.df[self.value] == x][self.key])
+
+        for g1, g2 in itertools.combinations(groups, 2) :
+            if intersection : ncount = len(get_keys(g1) & get_keys(g2))
+            else : ncount = len(get_keys(g1) | get_keys(g2))
+            
+            idx1, idx2 = groups.index(g1), groups.index(g2)
+            if idx1 > idx2 : idx1, idx2 = idx2, idx1
+            values[idx1][idx2] = ncount
+
+        for value, sdf in self.df.groupby(self.value) :
+            idx = groups.index(value)
+            values[idx][idx] = sdf[self.key].nunique()
+
+        return pd.DataFrame(values, index=groups, columns=groups)
+
+    def plot(self, df, ** kwargs) :
+        sns.heatmap(data=df, ax=self.ax, ** kwargs)
+
+def pairwise_heatmap(value, hue, data, ax, ** kwargs) :
+    return PairwiseHeatmap(data, value, hue, ax, ** kwargs)
