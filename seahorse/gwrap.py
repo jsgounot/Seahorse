@@ -194,6 +194,11 @@ class Fig() :
         self.set_size_inches(* constants.DEFAULTRES)
         return self.fig
 
+    def get_size(self, px=False) :
+        size = self.fig.get_size_inches()
+        if px : size = size * self.fig.dpi
+        return size
+
     def set_square(self, size=12) :
         self.fig.set_size_inches(size, size)
 
@@ -223,7 +228,7 @@ class Fig() :
         plt.show(self.fig, * args, ** kwargs)
 
     def save(self, fname, tab=True, ** kwargs) :
-        kwargs = {"dpi":120, "alpha":0.5, ** kwargs}
+        kwargs = {"dpi": 120, "alpha": 0.5, ** kwargs}
 
         self.fig.savefig(fname, ** kwargs)
 

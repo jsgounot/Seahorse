@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2018-05-16 13:53:18
 # @Last modified by:   jsgounot
-# @Last Modified time: 2019-03-06 16:52:01
+# @Last Modified time: 2019-03-07 15:16:06
 
 # http://patorjk.com/software/taag/#p=display&v=3&f=Calvin%20S&t=barplot
 # Calvin S
@@ -33,15 +33,13 @@ def plot(x, y, data, ax, hue=None, palette=None, fill=0, fbeetween=None, ** kwar
     # Similar to pandas.plot (using behind) function but with the correct argument
     # Meaning that you can use x, y and hue, and you don't have to transform the df before
 
-    # TODO : Manage the palette argument !
-
-
     if hue : data = pd.pivot_table(data, index=x, values=y, columns=hue).fillna(fill)
     else : data = data.set_index(x)[y]
 
-    print (data)
-    print (kwargs)
+    palette = palette or sns.color_palette()
+    colors = [palette[idx] for idx in range(len(data.columns))] if hue else palette[0]
 
+    kwargs["color"] = colors
     r = data.plot(ax=ax, ** kwargs)
 
 

@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2018-12-20 13:35:31
 # @Last modified by:   jsgounot
-# @Last Modified time: 2019-03-06 18:45:59
+# @Last Modified time: 2019-03-07 17:13:09
 
 import pandas as pd
 from seahorse import Graph
@@ -10,7 +10,8 @@ from seahorse.gwrap import sns, Fig
 
 class ClusterMap(Fig) :
 
-    def __init__(self, * args, rotatey=True, rotatex=True, rm_yticks=False, ** kwargs) :
+    def __init__(self, * args, rotatey=True, rotatex=True, rm_yticks=False,
+        width_ratios=None, height_ratios=None, ** kwargs) :
         
         self.run_cmap(* args, ** kwargs)
 
@@ -25,6 +26,9 @@ class ClusterMap(Fig) :
         if rm_yticks : graph.remove_yticks()
         if rotatex : graph.transform_xticks(rotation=90)
         if rotatey : graph.transform_yticks(rotation=0)
+
+        if width_ratios : self.clusterobj.gs.set_width_ratios(width_ratios)
+        if height_ratios : self.clusterobj.gs.set_height_ratios(height_ratios)
 
         self.fig = self.heatmap_ax.get_figure()
 
