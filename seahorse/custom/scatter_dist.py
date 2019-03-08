@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2018-12-21 10:49:13
 # @Last modified by:   jsgounot
-# @Last Modified time: 2019-02-04 16:04:32
+# @Last Modified time: 2019-03-08 13:55:19
 
 import numpy as np
 from seahorse.gwrap import sns
@@ -11,18 +11,21 @@ import matplotlib.gridspec as gridspec
 
 class ScatterDist(Fig) :
     def __init__(self, df, c1, c2, hue=None, kwargs_scatter={}, kwargs_dist={}, method="violinplot",
-                 spacers=(.1, .1), boxratio=[(3,1), (1,3)], size=12, fillna=None, colors=None,
+                 spacers=(.1, .1), boxratio=[(3,1), (1,3)], size=12, fillna=None, palette=None,
                  xlim=None, ylim=None) :
         
+        # Maybe rebuild this using that :
+        # https://github.com/mwaskom/seaborn/issues/1194
+
         self.df = df
 
         if method not in ["violinplot", "boxplot"] :
             raise ValueError("method should be either distplot, boxplot or violinplot")
 
         self.clean_na(c1, c2, fillna)
-        colors = sns.color_palette() if colors is None else colors
+        palette = sns.color_palette() if palette is None else palette
         if hue is not None : 
-            kwargs_dist, kwargs_scatter = self.update_hue(hue, kwargs_scatter, kwargs_dist, colors)
+            kwargs_dist, kwargs_scatter = self.update_hue(hue, kwargs_scatter, kwargs_dist, palette)
 
         self.create_fig()
         self.init_ui(boxratio, spacers, size)
@@ -31,11 +34,11 @@ class ScatterDist(Fig) :
 
         self.data = df
 
-    def update_hue(self, hue, kwargs_dist, kwargs_scatter, colors) :
+    def update_hue(self, hue, kwargs_dist, kwargs_scatter, palette) :
         kwargs_scatter["hue"] = hue
-        kwargs_scatter["palette"] = colors
+        kwargs_scatter["palette"] = palette
         kwargs_dist["hue"] = hue
-        kwargs_dist["palette"] = colors
+        kwargs_dist["palette"] = palette
         kwargs_dist["y"] = hue
         return kwargs_dist, kwargs_scatter
 
@@ -97,3 +100,9 @@ class ScatterDist(Fig) :
 
     def get_scatter_graph(self) :
         return Graph(self.df, ax=self.ax_scatter)
+
+    def get_top_graph(self) :
+        return Graph(self.df, ax=self.ax_top_dist)        
+
+    def get_right_graph(self) :
+        return Graph(self.df, ax=self.ax_right_dist)

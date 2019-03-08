@@ -808,8 +808,8 @@ class SubplotsContainer(Fig) :
             kwargs.setdefault("prop", {"size" : 15})
 
         for idx, ax in enumerate(self.nffaxes) :
-            if idx == index :
+            if idx == index and kwargs :
                 self.graph(idx).set_legend(** kwargs)
-            else :
+            elif idx != index :
                 self.graph(idx).remove_legend()
 

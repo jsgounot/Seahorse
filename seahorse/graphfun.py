@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2018-05-16 13:53:18
 # @Last modified by:   jsgounot
-# @Last Modified time: 2019-03-07 15:16:06
+# @Last Modified time: 2019-03-08 11:09:11
 
 # http://patorjk.com/software/taag/#p=display&v=3&f=Calvin%20S&t=barplot
 # Calvin S
@@ -37,8 +37,9 @@ def plot(x, y, data, ax, hue=None, palette=None, fill=0, fbeetween=None, ** kwar
     else : data = data.set_index(x)[y]
 
     palette = palette or sns.color_palette()
-    colors = [palette[idx] for idx in range(len(data.columns))] if hue else palette[0]
-
+    try : colors = [palette[name] for name in data.columns]
+    except KeyError : colors = [palette[idx] for idx in range(len(data.columns))] if hue else palette[0]
+  
     kwargs["color"] = colors
     r = data.plot(ax=ax, ** kwargs)
 
