@@ -753,24 +753,27 @@ class SubplotsContainer(Fig) :
             if ax not in ax_bottom : 
                 ax.set_xticklabels(["" for _ in ax.get_xticklabels()])
 
-    def force_sharex(self) :
-        min_xlim = min(min(ax.get_xlim()) for ax in self.nffaxes)
-        max_xlim = max(max(ax.get_xlim()) for ax in self.nffaxes)
-        for ax in self.nffaxes : ax.set_xlim((min_xlim, max_xlim))
-        self.clean_xticks_bottom()        
+    def force_sharex(self, ignored_axes=[], rm_ticks=True) :
+        axes = [ax for ax in self.nffaxes if ax not in ignored_axes]
+        min_xlim = min(min(ax.get_xlim()) for ax in axes)
+        max_xlim = max(max(ax.get_xlim()) for ax in axes)
+        for ax in axes : ax.set_xlim((min_xlim, max_xlim))
+        if rm_ticks : self.clean_xticks_bottom()        
 
-    def force_sharey(self) :
+    def force_sharey(self, ignored_axes=[], rm_ticks=True) :
         ax_left = self.get_axes_edge(left=True)
-        min_ylim = min(min(ax.get_ylim()) for ax in self.nffaxes)
-        max_ylim = max(max(ax.get_ylim()) for ax in self.nffaxes)
+        axes = [ax for ax in self.nffaxes if ax not in ignored_axes]
+        min_ylim = min(min(ax.get_ylim()) for ax in axes)
+        max_ylim = max(max(ax.get_ylim()) for ax in axes)
 
-        for ax in self.nffaxes :
+        for ax in axes :
             ax.set_ylim((min_ylim, max_ylim))
-            if ax not in ax_left : ax.set_yticklabels(["" for _ in ax.get_yticklabels()])
+            if ax not in ax_left and rm_ticks : 
+                ax.set_yticklabels(["" for _ in ax.get_yticklabels()])
 
-    def force_both(self) :
-        self.force_sharex()
-        self.force_sharey()
+    def force_both(self, ignored_axes=[], rm_ticks=True) :
+        self.force_sharex(ignored_axes, rm_ticks)
+        self.force_sharey(ignored_axes, rm_ticks)
 
     def set_labels(self, xlabel=None, ylabel=None, sub=True, ** kwargs) :
         if sub : self._set_labels_sub(xlabel, ylabel, ** kwargs)
