@@ -199,6 +199,10 @@ class Fig() :
         if px : size = size * self.fig.dpi
         return size
 
+    def set_vertical(self, ratio=2, vsize=10) :
+        hsize = vsize / ratio
+        self.fig.set_size_inches(hsize, vsize)
+
     def set_square(self, size=12) :
         self.fig.set_size_inches(size, size)
 
