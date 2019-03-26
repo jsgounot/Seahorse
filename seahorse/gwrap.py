@@ -34,7 +34,11 @@ class LibWrapper() :
             if cuse and "data" in binds : binds["data"] = binds["data"][cuse]
             if not cuse : binds.pop("data", None)
 
-        return getattr(self.lib, funname)(* args, ** binds, ** kwargs)
+        # doing that we erase binds keys which 
+        # are found in kwargs, such as data
+
+        kwargs = {** binds, ** kwargs}
+        return getattr(self.lib, funname)(* args, ** kwargs)
 
     def __getattr__(self, funname) :
         if not hasattr(self.lib, funname) : 
