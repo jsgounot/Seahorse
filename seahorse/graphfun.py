@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2018-05-16 13:53:18
 # @Last modified by:   jsgounot
-# @Last Modified time: 2019-03-26 15:31:37
+# @Last Modified time: 2019-03-26 18:09:56
 
 # http://patorjk.com/software/taag/#p=display&v=3&f=Calvin%20S&t=barplot
 # Calvin S
@@ -429,6 +429,7 @@ def non_linear_reg(fun, col1, col2, data, ax, kwargs_cfit={}, yvalues_plot=None,
 
     c1 = yvalues_plot if yvalues_plot is not None else c1
     yvalues = fun(c1, * popt)
+    
     if not yvalues.any() : raise Exception("Unable to find yvalues with this law")
     ax.plot(c1, yvalues, * args, ** kwargs)
 

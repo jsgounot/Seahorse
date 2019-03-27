@@ -183,8 +183,9 @@ class Fig() :
         self.create_fig()
 
     def create_fig(self) :
+
         # Problem here is how pylab handles multiple figures
-        # If plt.figure is used, sometimes (for example when using gridspec), you can have weird interaction
+        # If plt.figure is used, sometimes (for example when using gridspec), you can have weird interactions
         # between different graphs
         # However if you use Figure() it works well but you cannot use the plt.show() function anymore
 
@@ -195,7 +196,9 @@ class Fig() :
             self.fig = Figure()
             self.canvas = constants.FCanva(self.fig)
 
-        self.set_size_inches(* constants.DEFAULTRES)
+        if constants.SHOWMODE and constants.DEFAULTRES_SHOWMODE :
+            self.set_size_inches(* constants.DEFAULTRES)
+    
         return self.fig
 
     def get_size(self, px=False) :
