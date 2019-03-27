@@ -2,15 +2,15 @@
 # @Author: jsgounot
 # @Date:   2018-12-20 13:35:31
 # @Last modified by:   jsgounot
-# @Last Modified time: 2019-03-07 17:13:09
+# @Last Modified time: 2019-03-27 17:22:13
 
 import pandas as pd
-from seahorse import Graph
+from seahorse import Graph, cmap_from_color
 from seahorse.gwrap import sns, Fig
 
 class ClusterMap(Fig) :
 
-    def __init__(self, * args, rotatey=True, rotatex=True, rm_yticks=False,
+    def __init__(self, * args, rotatey=0, rotatex=90, rm_yticks=False,
         width_ratios=None, height_ratios=None, ** kwargs) :
         
         self.run_cmap(* args, ** kwargs)
@@ -24,8 +24,8 @@ class ClusterMap(Fig) :
 
         graph = self.heatmap_graph
         if rm_yticks : graph.remove_yticks()
-        if rotatex : graph.transform_xticks(rotation=90)
-        if rotatey : graph.transform_yticks(rotation=0)
+        if rotatex is not None : graph.transform_xticklabels(rotation=rotatex)
+        if rotatey is not None : graph.transform_yticklabels(rotation=rotatey)
 
         if width_ratios : self.clusterobj.gs.set_width_ratios(width_ratios)
         if height_ratios : self.clusterobj.gs.set_height_ratios(height_ratios)
@@ -35,6 +35,11 @@ class ClusterMap(Fig) :
     def run_cmap(self, * args, ** kwargs) :
         self.clusterobj = sns.clustermap(* args, ** kwargs)
 
+    @staticmethod
+    def drop_same_rows(df) :
+        # Maybe there is a better way to do that
+        return pd.DataFrame((row for idx, row in df.iterrows() if row.nunique() != 1))
+
     @property
     def heatmap_graph(self):
         return Graph(ax=self.heatmap_ax)
@@ -43,6 +48,10 @@ class ClusterMap(Fig) :
     def heatmap_ax(self):
         return self.clusterobj.ax_heatmap
 
+    @property
+    def cax(self):
+        return self.clusterobj.cax
+    
     @property
     def data(self):
         return ClusterMap.reorder_df_clustermap(self.raw_data,
@@ -66,6 +75,44 @@ class ClusterMap(Fig) :
             pass
 
         return df
+
+class DiscreteClusterMap(ClusterMap) :
+
+    def __init__(self, data, * args, colors=None, ** kwargs) :
+
+        values = sorted(set.union(* [set(data[column]) for column in data.columns]))[::-1]
+
+        if colors is None : 
+            colors_flat = sns.cubehelix_palette(len(values))
+            cmap = cmap_from_color(colors_flat)
+            
+        else :
+            colors_flat = [colors[value] for value in values]
+            cmap = cmap_from_color(colors_flat)
+
+        kwargs["cmap"] = cmap
+
+        ticks = self.cbar_ticks(values)
+        cbar_kws = kwargs.setdefault("cbar_kws", {})
+        cbar_kws["ticks"] = ticks
+
+        # Now we have to replace values in order to fit in the colorbar space (-1, 1)
+        vfun = lambda cell : values.index(cell)
+        transformed_data = data.applymap(vfun)
+
+        super().__init__(transformed_data, * args, ** kwargs)
+        
+        self.raw_data = data
+        self.cax.set_yticklabels(values)
+
+    @staticmethod
+    def cbar_ticks(values) :
+        # return the ticks position for a discret cbar
+        # usually the cbar goes to -1 to 1
+
+        cellsize = (len(values) - 1) / len(values)
+        subsize = cellsize / 2
+        return [(idx * cellsize) - subsize for idx in range(1, len(values) + 1)]
 
 class GenomeMap(ClusterMap) :
 
