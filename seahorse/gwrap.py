@@ -171,7 +171,7 @@ class GroupByPlotter() :
 
         for idx, name, subdf in self.iterator :
             try : ax = self.sc.ax(idx)
-            except IndexError : raise IndexError("Not enought axes available")
+            except IndexError : raise IndexError("Not enough axes available")
             fun(name, subdf, ax, ** kwargs)
 
 
@@ -196,7 +196,7 @@ class Fig() :
             self.fig = Figure()
             self.canvas = constants.FCanva(self.fig)
 
-        if constants.SHOWMODE and constants.DEFAULTRES_SHOWMODE :
+        if not constants.SHOWMODE or not constants.DEFAULTRES_SHOWMODE :
             self.set_size_inches(* constants.DEFAULTRES)
     
         return self.fig
@@ -318,13 +318,19 @@ class Graph(Fig) :
             text = tick.get_text()
             yield fun_names(text)
 
-    def transform_xticks(self, fun_names={}, which="major", ** kwargs) :
+    def transform_xticklabels(self, fun_names={}, which="major", ** kwargs) :
         fun = (lambda x : fun_names.get(x, x)) if isinstance(fun_names, dict) else fun_names
         self.ax.set_xticklabels(list(self._ticks_names(self.ax.get_xticklabels(which=which), fun)), ** kwargs)
+        
+    def transform_xticks(self, fun, ** kwargs) :
+        self.ax.set_xticks(list(fun(self.ax.get_xticks())), ** kwargs)
 
-    def transform_yticks(self, fun_names={}, which="major", ** kwargs) :
+    def transform_yticklabels(self, fun_names={}, which="major", ** kwargs) :
         fun = (lambda x : fun_names.get(x, x)) if isinstance(fun_names, dict) else fun_names
-        self.ax.set_yticklabels(list(self._ticks_names(self.ax.get_yticklabels(which=which), fun)), ** kwargs)
+        self.ax.set_yticklabels(list(self._ticks_names(self.ax.get_yticklabels(which=which), fun)), ** kwargs) 
+
+    def transform_yticks(self, fun, ** kwargs) :
+        self.ax.set_yticks(list(fun(self.ax.get_yticks())), ** kwargs)
 
     def set_xticks(self, positions, values=None, * args, ** kwargs) :
         values = values or [str(position) for position in positions]
