@@ -57,7 +57,8 @@ from seahorse import gwrap, SContainer
 df = gwrap.sns.load_dataset("tips")
 sc = SContainer(df, 2, 2)
 sc.groupby("day").sns.regplot("total_bill", "tip", color="black", scatter_kws={'s' : 8})
-
+sc.set_labels("Total bill", "Tip")
+sc.share_axes()
 ```
 
 ![Example image](https://github.com/jsgounot/Seahorse/blob/master/Examples/scontainer_gb.png)
