@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2018-05-16 13:53:18
 # @Last modified by:   jsgounot
-# @Last Modified time: 2019-03-26 18:09:56
+# @Last Modified time: 2019-03-29 16:08:36
 
 # http://patorjk.com/software/taag/#p=display&v=3&f=Calvin%20S&t=barplot
 # Calvin S
@@ -18,8 +18,8 @@ from matplotlib.collections import PathCollection
 
 from scipy.optimize import curve_fit
 
-from seahorse import graph_utils, constants
-from seahorse.gwrap import sns
+from seahorse.core import graph_utils, constants
+from seahorse.core.gwrap import sns
 from seahorse.custom.vennplot import venn_df, venn_dic
 
 
@@ -255,8 +255,6 @@ def stacked_barplot(x, y, hue, data, ax, prop=False, sort_values=False,
 
     if horizontal :
         ndf = ndf.iloc[::-1]
-
-    print (ndf)
 
     if ignore :
         used = [column for column in ndf.columns if column not in ignore]

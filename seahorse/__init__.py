@@ -1,10 +1,13 @@
-from seahorse.gwrap import Fig
-from seahorse.gwrap import BrokenGraph, Graph
-from seahorse.gwrap import SubplotsContainer as SContainer
-from seahorse.graph_utils import *
+import seaborn as sns
+
+from seahorse.core.figure import Fig
+from seahorse.core.graph import Graph
+from seahorse.core.scontainer import SubplotsContainer as SContainer
+from seahorse.core.graph_utils import *
+from seahorse.core import constants
 
 from seahorse.custom.pyUpset import * 
 from seahorse.custom.cluster_maps import *
 from seahorse.custom.scatter_dist import *
 
-__version__ = "0.0.1"
+__version__ = "0.0.2"

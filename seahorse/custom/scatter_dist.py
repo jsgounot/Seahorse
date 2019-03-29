@@ -2,11 +2,10 @@
 # @Author: jsgounot
 # @Date:   2018-12-21 10:49:13
 # @Last modified by:   jsgounot
-# @Last Modified time: 2019-03-08 13:55:19
+# @Last Modified time: 2019-03-29 16:10:28
 
 import numpy as np
-from seahorse.gwrap import sns
-from seahorse import Graph, Fig
+from seahorse import Graph, Fig, sns
 import matplotlib.gridspec as gridspec
 
 class ScatterDist(Fig) :

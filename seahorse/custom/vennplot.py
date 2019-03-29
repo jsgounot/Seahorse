@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2019-02-14 09:46:03
 # @Last modified by:   jsgounot
-# @Last Modified time: 2019-03-08 14:03:18
+# @Last Modified time: 2019-03-29 16:09:36
 
 try :
     from matplotlib_venn import venn2, venn3, venn2_unweighted, venn3_unweighted
@@ -10,7 +10,7 @@ except ImportError :
     print ("Matplotlib venn package not found (optional)")
     print ("Download command line : pip install matplotlib-venn")
 
-from seahorse import gwrap
+from seahorse.core.gwrap import sns
 
 def venn_dic(data, ax, weighted=True, colors=None) :
 
@@ -50,7 +50,7 @@ def venn_df(column, hue, data, ax, weighted=True, colors=None) :
     process_venn(ax, names, values, weighted, colors)
 
 def process_venn(ax, names, values, weighted, colors=None) :
-    colors = colors or gwrap.sns.color_palette()
+    colors = colors or sns.color_palette()
 
     if len(names) == 2 :
         func = venn2 if weighted else venn2_unweighted

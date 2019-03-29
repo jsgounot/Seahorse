@@ -2,11 +2,11 @@
 # @Author: jsgounot
 # @Date:   2018-12-20 13:35:31
 # @Last modified by:   jsgounot
-# @Last Modified time: 2019-03-27 17:22:13
+# @Last Modified time: 2019-03-29 16:10:10
 
 import pandas as pd
-from seahorse import Graph, cmap_from_color
-from seahorse.gwrap import sns, Fig
+from seahorse import Fig, Graph, cmap_from_color
+from seahorse.core.gwrap import sns
 
 class ClusterMap(Fig) :
 
