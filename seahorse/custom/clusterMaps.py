@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2018-12-20 13:35:31
 # @Last modified by:   jsgounot
-# @Last Modified time: 2019-03-29 16:10:10
+# @Last Modified time: 2019-04-01 10:47:58
 
 import pandas as pd
 from seahorse import Fig, Graph, cmap_from_color
@@ -24,8 +24,8 @@ class ClusterMap(Fig) :
 
         graph = self.heatmap_graph
         if rm_yticks : graph.remove_yticks()
-        if rotatex is not None : graph.transform_xticklabels(rotation=rotatex)
-        if rotatey is not None : graph.transform_yticklabels(rotation=rotatey)
+        if rotatex is not None : graph.apply_xticklabels(rotation=rotatex)
+        if rotatey is not None : graph.apply_yticklabels(rotation=rotatey)
 
         if width_ratios : self.clusterobj.gs.set_width_ratios(width_ratios)
         if height_ratios : self.clusterobj.gs.set_height_ratios(height_ratios)
@@ -79,6 +79,9 @@ class ClusterMap(Fig) :
 class DiscreteClusterMap(ClusterMap) :
 
     def __init__(self, data, * args, colors=None, ** kwargs) :
+
+        if isinstance(data, pd.DataFrame) and data.empty :
+            raise ValueError("Empty dataframe")
 
         values = sorted(set.union(* [set(data[column]) for column in data.columns]))[::-1]
 
