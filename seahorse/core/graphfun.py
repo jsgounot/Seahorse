@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2018-05-16 13:53:18
 # @Last modified by:   jsgounot
-# @Last Modified time: 2019-03-29 16:08:36
+# @Last Modified time: 2019-04-01 13:49:20
 
 # http://patorjk.com/software/taag/#p=display&v=3&f=Calvin%20S&t=barplot
 # Calvin S
@@ -20,7 +20,7 @@ from scipy.optimize import curve_fit
 
 from seahorse.core import graph_utils, constants
 from seahorse.core.gwrap import sns
-from seahorse.custom.vennplot import venn_df, venn_dic
+from seahorse.custom.venn import venn_df, venn_dic
 
 
 """
