@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2019-03-29 15:52:33
 # @Last modified by:   jsgounot
-# @Last Modified time: 2019-03-29 17:08:09
+# @Last Modified time: 2019-04-01 13:00:27
 
 import matplotlib.gridspec as gridspec
 
@@ -168,13 +168,17 @@ class SubplotsContainer(Fig) :
     def cgs_shape(self):
         return self.cgs.get_geometry()
     
+    @property
+    def axes(self):
+        return iter(self.cgs)
+    
     def gs_update(self, * args, gname="base", ** kwargs) :
         self.gs.update(* args, ** kwargs)
 
     def ax(self, idx, gname=None) :
         gname = gname or self.used_gs
         return self.gsm[gname].get_make(idx)
-    
+
     def graph(self, idx, data=None) :
         data = self.data if data is None else data
         return Graph(data, self.ax(idx))
@@ -237,6 +241,7 @@ class SubplotsContainer(Fig) :
             ax.set_xlim((min_xlim, max_xlim))
             if ax not in ax_bottom and rm_ticks : 
                 ax.set_xticklabels(["" for _ in ax.get_xticklabels()])
+                ax.set_xlabel("")
 
     def sharey(self, ignored_axes=[], rm_ticks=True) :
         ax_left = list(self.get_axes_edge(left=True))
@@ -249,6 +254,7 @@ class SubplotsContainer(Fig) :
             ax.set_ylim((min_ylim, max_ylim))
             if ax not in ax_left and rm_ticks : 
                 ax.set_yticklabels(["" for _ in ax.get_yticklabels()])
+                ax.set_ylabel("")
 
     def share_axes(self, ignored_axes=[], rm_ticks=True) :
         self.sharex(ignored_axes, rm_ticks)
