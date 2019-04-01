@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2019-03-29 15:55:41
 # @Last modified by:   jsgounot
-# @Last Modified time: 2019-03-29 17:54:35
+# @Last Modified time: 2019-03-29 18:12:10
 
 from matplotlib.ticker import FuncFormatter
 
@@ -63,7 +63,7 @@ class Graph(Fig) :
     def transform_xticks(self, fun, ** kwargs) :
         self.ax.set_xticks(list(fun(self.ax.get_xticks())), ** kwargs)
 
-    def apply_ytickslabels(self, fun={}, which="major", ** kwargs) :
+    def apply_yticklabels(self, fun={}, which="major", ** kwargs) :
         ufun = (lambda x : fun.get(x, x)) if isinstance(fun, dict) else fun
         self.ax.set_yticklabels(list(self._ticks_names(self.ax.get_yticklabels(which=which), ufun)), ** kwargs) 
 
