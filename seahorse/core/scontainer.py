@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2019-03-29 15:52:33
 # @Last modified by:   jsgounot
-# @Last Modified time: 2019-04-01 13:12:04
+# @Last Modified time: 2019-04-16 11:46:06
 
 import matplotlib.gridspec as gridspec
 
@@ -166,7 +166,7 @@ class SubplotsContainer(Fig) :
 
     @property
     def cgs_shape(self):
-        return self.cgs.get_geometry()
+        return self.cgs.shape
     
     @property
     def axes(self):
@@ -203,6 +203,10 @@ class SubplotsContainer(Fig) :
         self.gsm[name] = GSManager(gs, self.add_subplot)
   
     # ---------------------------------------------------------------
+
+    def fill_axes(self) :
+        nrow, ncol = self.cgs_shape
+        return [self.ax(i) for i in range(nrow * ncol)]
 
     def get_axes_edge(self, top=False, bottom=False, left=False, right=False) :
         axes = []

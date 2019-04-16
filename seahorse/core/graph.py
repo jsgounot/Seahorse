@@ -2,8 +2,9 @@
 # @Author: jsgounot
 # @Date:   2019-03-29 15:55:41
 # @Last modified by:   jsgounot
-# @Last Modified time: 2019-03-29 18:12:10
+# @Last Modified time: 2019-04-11 11:58:10
 
+import numpy as np
 from matplotlib.ticker import FuncFormatter
 
 from seahorse import sns

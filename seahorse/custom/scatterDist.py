@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2018-12-21 10:49:13
 # @Last modified by:   jsgounot
-# @Last Modified time: 2019-03-29 16:10:28
+# @Last Modified time: 2019-04-10 16:47:12
 
 import numpy as np
 from seahorse import Graph, Fig, sns
@@ -92,8 +92,8 @@ class ScatterDist(Fig) :
         graph = Graph(ax=self.ax_right_dist, data=self.df)
         getattr(graph.sns, method)(** used_kwargs) 
         graph.set_labels("", "")
-        graph.transform_xticks(rotation=90)
-        graph.transform_yticks(lambda x : "")
+        graph.apply_xticklabels(rotation=90)
+        graph.apply_yticklabels(lambda x : "")
         graph.remove_legend()
         self.ax_right_dist.set_ylim(self.ax_scatter.get_ylim())
 

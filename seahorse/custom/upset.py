@@ -16,6 +16,7 @@ except ImportError :
     pass
 
 class PyUpset(seahorse.Fig) :
+
     def __init__(self, df, key, value, unique=True, intersection=True, addvalue=True,
                  bcolor="black", griddots=False, lsize=12, maxwidth=10, row_clustering=False,
                  row_dendogram=False, method='average', metric='euclidean', 
@@ -234,7 +235,20 @@ class PyUpset(seahorse.Fig) :
         sns.heatmap(data=df, ax=self.ax_grid, xticklabels=False, yticklabels=False, cbar=False, linewidths=1,
         cmap="Greys", ** gridkwargs)
 
+    """
+    Supplemental draws
+    """
+
+    def draw_intersize_count(self, ax=None, ** kwargs) :
+        count = self.df.groupby(self.key)[self.value].nunique().rename("intersize").reset_index()
+        count = count.groupby("intersize").size().rename("count").reset_index()
+
+        graph = seahorse.Graph(count, ax=ax)
+        graph.sns.barplot(x="intersize", y="count", ** kwargs)
+        return graph
+
 class PyUpsetHue(PyUpset) :
+
     def __init__(self, df, key, value, hue, nvalue=0, unique=True, intersection=True,
                  griddots=False, lsize=12, maxwidth=10, palette=None, addvalue=True,
                  boxratio=(None, None), spacers=(.1, .1), gridkwargs={}, legend=True) :

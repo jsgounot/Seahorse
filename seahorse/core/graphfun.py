@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2018-05-16 13:53:18
 # @Last modified by:   jsgounot
-# @Last Modified time: 2019-04-01 13:49:20
+# @Last Modified time: 2019-04-10 18:27:15
 
 # http://patorjk.com/software/taag/#p=display&v=3&f=Calvin%20S&t=barplot
 # Calvin S
@@ -14,6 +14,7 @@ import pylab as plt
 import pandas as pd
 import numpy as np
 
+import matplotlib.lines as mlines
 from matplotlib.collections import PathCollection
 
 from scipy.optimize import curve_fit
@@ -43,6 +44,8 @@ def plot(x, y, data, ax, hue=None, palette=None, fill=0, fbeetween=None, ** kwar
     kwargs["color"] = colors
     r = data.plot(ax=ax, ** kwargs)
 
+def draw_diagonal(ax, data=None, ** kwargs) :
+    ax.plot([0, 1], [0, 1], transform=ax.transAxes, ** kwargs)
 
 """
 ╔═╗┌─┐┬  ┌─┐┬─┐┌─┐┌┬┐  ╦═╗┌─┐┌─┐┌─┐┬  ┌─┐┌┬┐
@@ -58,8 +61,9 @@ def colored_regplot(col1, col2, data, ax, cbar=None, cbar_label=None, hue=None, 
     if cbar is not None :
         # http://stackoverflow.com/questions/13943217/how-to-add-colorbars-to-scatterplots-created-like-this
         cmap = sns.cubehelix_palette(light=.9, as_cmap=True)
-        graph_utils.remove_non_number(data, (cbar, ))
+        data = graph_utils.remove_non_number(data, (cbar, ))
         third_variable = data[cbar]
+
         skws = {"c" : third_variable, "cmap" : cmap, "color" : None}
         skws.update(kws_scatter)
         sns.regplot(col1, col2, data=data, ax=ax, scatter_kws=skws, ** kwargs)
@@ -81,7 +85,8 @@ def colored_regplot(col1, col2, data, ax, cbar=None, cbar_label=None, hue=None, 
     else :
         sns.regplot(col1, col2, data=data, ax=ax, ** kwargs)
 
-    return data[[col1, col2]].corr(**kwg_corr).iat[0,1]
+    correlation = data[[col1, col2]].corr(** kwg_corr)
+    return correlation
 
 """
 ╔═╗┌─┐┌┬┐┌─┐┬  ┌─┐┌┬┐
@@ -111,7 +116,7 @@ def plot_cat(df, y, xhue, ax, yhue=None, color=None, legend=True, fill=False, pa
         for idx, group in enumerate(df.groupby(yhue)) :
             name, sdf = group
             color = palette[idx] if palette else sns.color_palette()[idx]
-            plot_cat(sdf, y, xhue, ax, None, color, legend=legend, ** kwargs)
+            plot_cat(sdf, y, xhue, ax, None, color, legend=legend, fill=fill, ** kwargs)
             colors[name] = color
 
         if legend :
@@ -127,7 +132,7 @@ def plot_cat(df, y, xhue, ax, yhue=None, color=None, legend=True, fill=False, pa
                 idx_name += 1
 
             custom_plt("gposi", y, sdf, ax, color=color, ** kwargs)
-            if fill : ax.fill_between(sdf["gposi"], 0, sdf[y], alpha=.5)
+            if fill : ax.fill_between(sdf["gposi"], 0, sdf[y], alpha=.5, color=color)
 
 def cat_plot(x, y, xhue, data, ax, yhue=None, funsort=None, legend=True, tick_rot=0, background=False, start_zero=False,
              xhue_size={}, bgcolor=None, fill=False, palette=None, ** kwargs) :

@@ -5,6 +5,7 @@ import pandas as pd
 from seahorse import sns
 from seahorse.core import graphfun
 from seahorse.core import constants
+from seahorse.core import graph
 
 class SHException(Exception) :
     pass
@@ -51,7 +52,7 @@ class GraphAttributes(list) :
         new_elements = []
 
         for element in self :
-            obj = getattr(Graph(ax=element), name) if self.graph else getattr(element, name)
+            obj = getattr(graph.Graph(ax=element), name) if self.graph else getattr(element, name)
             new_elements.append(obj)
 
         return GraphAttributes(new_elements, False)

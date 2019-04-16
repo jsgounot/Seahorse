@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2018-05-16 13:53:18
 # @Last modified by:   jsgounot
-# @Last Modified time: 2019-03-27 17:42:27
+# @Last Modified time: 2019-04-11 17:49:13
 
 from numpy import isfinite, isnan, pi
 
@@ -18,8 +18,16 @@ import seaborn as sns
 """
 
 def remove_non_number(df, columns) :
+    df = df.dropna(axis=0, how="any")
+
+    # for now I don't know how to solve this
+    # but must be fixed soon (hopefully)
+
+    """    
     for column in columns :
+        print (df[column])
         df = df[isfinite(df[column])]
+    """
 
     return df
 
@@ -127,6 +135,8 @@ def basic_legend(ax, names_color, * args, ** kwargs) :
     handle = [Patch(facecolor=color, edgecolor=color, label=name)
         for name, color in names_color.items()]
     
+    handle = sorted(handle, key = lambda patch : patch.get_label())
+
     ax.legend(handles=handle, * args, ** kwargs)
 
 def add_custom_basic_legend(ax, names, palette=None, ** kwargs) :
