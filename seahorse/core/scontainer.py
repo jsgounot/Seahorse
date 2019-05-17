@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2019-03-29 15:52:33
 # @Last modified by:   jsgounot
-# @Last Modified time: 2019-04-16 11:46:06
+# @Last Modified time: 2019-04-18 18:00:21
 
 import matplotlib.gridspec as gridspec
 
@@ -208,15 +208,30 @@ class SubplotsContainer(Fig) :
         nrow, ncol = self.cgs_shape
         return [self.ax(i) for i in range(nrow * ncol)]
 
-    def get_axes_edge(self, top=False, bottom=False, left=False, right=False) :
-        axes = []
+    def get_edges(self, top=False, bottom=False, left=False, right=False, 
+            asgraph=False, reverse=False, union=True) :
         
+        if reverse : 
+            axes = set(self.get_edges(top=top, bottom=bottom, left=left, right=right))
+
+            for ax in self.cgs :
+                if ax in axes : continue
+                yield Graph(ax=ax) if asgraph else ax
+
+            raise StopIteration
+
         for ax in self.cgs :
-            if top and not ax.is_first_row() : continue
-            if bottom and not ax.is_last_row() : continue
-            if left and not ax.is_first_col() : continue
-            if right and not ax.is_last_col() : continue
-            yield ax
+            res = []
+
+            if top : res.append(ax.is_first_row())
+            if bottom : res.append(ax.is_last_row())
+            if left : res.append(ax.is_first_col())
+            if right : res.append(ax.is_last_col())
+
+            if union == True and all(res) != True : continue
+            if union == False and any(res) != True : continue
+
+            yield Graph(ax=ax) if asgraph else ax
 
     def groupby(self, hue, ** kwargs) :
         return GroupByPlotter(self.data, self, hue, ** kwargs)
@@ -225,8 +240,8 @@ class SubplotsContainer(Fig) :
         return GraphAttributes(list(self.cgs), graph)
 
     def clean_graph_labels(self) :
-        ax_left = list(self.get_axes_edge(left=True))
-        ax_bottom = list(self.get_axes_edge(bottom=True))
+        ax_left = list(self.get_edges(left=True))
+        ax_bottom = list(self.get_edges(bottom=True))
 
         for ax in self.cgs :
             if ax in ax_left and ax in ax_bottom : continue
@@ -235,7 +250,7 @@ class SubplotsContainer(Fig) :
             else : ax.set_ylabel(""); ax.set_xlabel("")
 
     def sharex(self, ignored_axes=[], rm_ticks=True) :
-        ax_bottom = list(self.get_axes_edge(bottom=True))
+        ax_bottom = list(self.get_edges(bottom=True))
         axes = [ax for ax in self.cgs if ax not in ignored_axes]
 
         min_xlim = min(min(ax.get_xlim()) for ax in axes)
@@ -248,7 +263,7 @@ class SubplotsContainer(Fig) :
                 ax.set_xlabel("")
 
     def sharey(self, ignored_axes=[], rm_ticks=True) :
-        ax_left = list(self.get_axes_edge(left=True))
+        ax_left = list(self.get_edges(left=True))
         axes = [ax for ax in self.cgs if ax not in ignored_axes]
 
         min_ylim = min(min(ax.get_ylim()) for ax in axes)
@@ -273,8 +288,8 @@ class SubplotsContainer(Fig) :
         if ylabel : self.ax_labels.set_ylabel(ylabel, ** kwargs)
 
     def _set_labels_sub(self, xlabel=None, ylabel=None, ** kwargs) :
-        ax_left = list(self.get_axes_edge(left=True))
-        ax_bottom = list(self.get_axes_edge(bottom=True))
+        ax_left = list(self.get_edges(left=True))
+        ax_bottom = list(self.get_edges(bottom=True))
 
         for ax in self.cgs :
             ax_xlabel = xlabel if ax in ax_bottom else ""
