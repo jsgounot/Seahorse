@@ -306,24 +306,6 @@ class PyUpsetDic(PyUpset) :
         self.ax_dist_barplot.spines['left'].set_visible(False)
         self.ax_dist_barplot.spines['top'].set_visible(False)
 
-    def make_comb_barplot(self, bcolor="black", lsize=15) :
-        values = {}
-        fill = self.ncombi if self.ncombi < self.maxwidth else self.maxwidth
-        sim_values = self.sim.most_common(int(fill))
-        for idx in range(int(fill)) :
-            try : values[idx] = sim_values[idx][1]
-            except IndexError : values[idx] = 0
-
-        s = pd.Series(values)
-        s.plot.bar(ax=self.ax_comb_barplot, color=bcolor)
-        self.ax_comb_barplot.set_facecolor('white')
-        plt.setp(self.ax_comb_barplot.get_xticklabels(), visible=False)
-        self.ax_comb_barplot.set_ylabel("Intersection size", size=lsize)
-        if self.addvalue : PyUpset.barplot_add_value(self.ax_comb_barplot)
-
-        self.ax_comb_barplot.spines['right'].set_visible(False)
-        self.ax_comb_barplot.spines['top'].set_visible(False)
-
 class PyUpsetHue(PyUpset) :
 
     def __init__(self, df, key, value, hue, nvalue=0, unique=True, intersection=True,
