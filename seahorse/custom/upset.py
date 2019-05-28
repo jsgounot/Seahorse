@@ -2,6 +2,7 @@ from collections import defaultdict, Counter
 from itertools import combinations
 from math import factorial
 
+import numpy as np
 import pandas as pd
 
 import pylab as plt
@@ -246,6 +247,82 @@ class PyUpset(seahorse.Fig) :
         graph = seahorse.Graph(count, ax=ax)
         graph.sns.barplot(x="intersize", y="count", ** kwargs)
         return graph
+
+class PyUpsetDic(PyUpset) :
+
+    def __init__(self, dic, addvalue=True, bcolor="black", griddots=False, lsize=12, 
+                 maxwidth=10, row_clustering=False, row_dendogram=False, 
+                 method='average', metric='euclidean', boxratio=(None, None), 
+                 spacers=(.1, .1), gridkwargs={}) :
+
+        self.sim = Counter(dic)      
+        self.maxwidth = maxwidth
+        self.addvalue = addvalue
+        self.forced_names = None
+
+        self.create_fig()
+        self.init_ui(boxratio, spacers, row_dendogram)
+        
+        if row_clustering or row_dendogram : self.run_clustering(method, metric)
+        if row_dendogram : self.dendrogram()
+
+        self.make_dist_barplot(bcolor=bcolor, lsize=lsize)
+        self.make_comb_barplot(bcolor=bcolor, lsize=lsize)
+        if griddots : self.make_grid_dots()
+        else : self.make_grid_hm(gridkwargs)
+
+    @property
+    def ncombi(self) :
+        n = len(self.sim)
+
+        if n > 10 and not self.maxwidth :
+            raise ValueError("More than 1000 combinations possible, please set a maxwidth")
+
+        if n > 10 :
+            return np.inf
+
+        return sum(factorial(n) / (factorial(r) * factorial(n - r))
+        for r in range(1, n + 1))
+
+    def make_dist_barplot(self, bcolor="black", lsize=15) :
+
+
+        mc = dict(self.sim.most_common(self.maxwidth))
+        data = defaultdict(int)
+        
+        for keys, value in mc.items() :
+            for key in keys :
+                data[key] += value
+   
+        df = pd.Series(data).reindex(self.names)
+
+        df.plot.barh(ax=self.ax_dist_barplot, color=bcolor)
+        self.ax_dist_barplot.set_facecolor('white')
+        self.ax_dist_barplot.invert_xaxis()
+        self.ax_dist_barplot.set_xlabel("Set size", size=lsize)
+        self.ax_dist_barplot.set_ylabel("")
+        self.ax_dist_barplot.yaxis.tick_right()
+
+        self.ax_dist_barplot.spines['left'].set_visible(False)
+        self.ax_dist_barplot.spines['top'].set_visible(False)
+
+    def make_comb_barplot(self, bcolor="black", lsize=15) :
+        values = {}
+        fill = self.ncombi if self.ncombi < self.maxwidth else self.maxwidth
+        sim_values = self.sim.most_common(int(fill))
+        for idx in range(int(fill)) :
+            try : values[idx] = sim_values[idx][1]
+            except IndexError : values[idx] = 0
+
+        s = pd.Series(values)
+        s.plot.bar(ax=self.ax_comb_barplot, color=bcolor)
+        self.ax_comb_barplot.set_facecolor('white')
+        plt.setp(self.ax_comb_barplot.get_xticklabels(), visible=False)
+        self.ax_comb_barplot.set_ylabel("Intersection size", size=lsize)
+        if self.addvalue : PyUpset.barplot_add_value(self.ax_comb_barplot)
+
+        self.ax_comb_barplot.spines['right'].set_visible(False)
+        self.ax_comb_barplot.spines['top'].set_visible(False)
 
 class PyUpsetHue(PyUpset) :
 

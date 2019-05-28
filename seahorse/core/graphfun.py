@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2018-05-16 13:53:18
 # @Last modified by:   jsgounot
-# @Last Modified time: 2019-04-10 18:27:15
+# @Last Modified time: 2019-05-28 10:46:33
 
 # http://patorjk.com/software/taag/#p=display&v=3&f=Calvin%20S&t=barplot
 # Calvin S
@@ -587,7 +587,7 @@ class PairwiseHeatmap() :
 
     # It is NOT a graph object but simply
     # a simple object to make the code cleaner
-    # instead of putting everythin inside a function
+    # instead of putting everything inside a function
     # use pairwise_heatmap function if you want to use it
 
     def __init__(self, data, key, value, ax, intersection=True, ** kwargs) :
