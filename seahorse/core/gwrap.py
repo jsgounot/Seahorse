@@ -63,7 +63,8 @@ class GraphAttributes(list) :
 class GBLibWrapper() :
 
     def __init__(self, lib, sc, iterator, bind_data=False, bind_axes=False, 
-        data_call=False, order=None, title_prefix=None, colors=None, itcolors=True, cuse=None) :
+        data_call=False, order=None, title_prefix=None, colors=None, itcolors=True, 
+        cuse=None, ax_by_name=False, set_title=True) :
         
         self.lib = lib
         self.sc = sc
@@ -78,16 +79,29 @@ class GBLibWrapper() :
         self.colors = colors if colors is not None else sns.color_palette()
         self.itcolors = itcolors
         self.cuse = cuse
+        
+        self.ax_by_name = ax_by_name
+        self.set_title = set_title
 
     def fun_wrap(self, funname, * args, ** kwargs) :
 
         for idx, name, subdf in self.iterator :
             if subdf.empty : continue
 
-            title = "%s %s" %(str(self.title_prefix), str(name)) if self.title_prefix else name
-            idx = idx if not self.order else order.index(name)
+            try : sname = " - ".join(name) if not isinstance(name, str) else name
+            except : sname = str(name)
+
+            # not sure about this one but nothing better found
+            # usually cuse is put into the sc's groupby args, however for the
+            # FacetGrid I would like to put it in the func args. However
+            # cuse can also be a function argument
             
-            try : ax = self.sc.ax(idx)
+            if "cuse" in kwargs : self.cuse = kwargs.pop("cuse", False)
+
+            title = "%s %s" %(str(self.title_prefix), str(sname)) if self.title_prefix else sname
+            idx = idx if not self.order else order.index(sname)
+
+            try : ax = self.sc.ax(name) if self.ax_by_name else self.sc.ax(idx)
             except IndexError : raise IndexError("Not enought axes available")
             
             if self.itcolors and self.colors != False and "color" not in kwargs :
@@ -104,13 +118,13 @@ class GBLibWrapper() :
                 print (kwargs)
 
             self.get_fun(funname, kwargs)(* args, ** kwargs)
-            ax.set_title(title)
+            if self.set_title : ax.set_title(title)
 
         self.sc.clean_graph_labels()
 
     def __getattr__(self, funname) :
         return lambda * args, ** kwargs : self.fun_wrap(funname, * args, ** kwargs)
-        
+
     def get_fun(self, funname, kwargs) :
         return self.get_fun_data(funname, kwargs) if self.data_call else self.get_fun_lib(funname)
 
@@ -157,8 +171,6 @@ class GroupByPlotter() :
         for idx, group in enumerate(iterator) :
             name, subdf = group
             if clean_cat : subdf = GroupByPlotter.clean_cat(subdf)
-            try : name = " - ".join(name) if not isinstance(name, str) else name
-            except : name = str(name)
             yield idx, name, subdf
 
     def apply(self, fun, ** kwargs) :

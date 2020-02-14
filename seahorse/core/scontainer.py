@@ -2,9 +2,12 @@
 # @Author: jsgounot
 # @Date:   2019-03-29 15:52:33
 # @Last modified by:   jsgounot
-# @Last Modified time: 2019-04-18 18:00:21
+# @Last Modified time: 2019-06-06 16:01:12
 
 import matplotlib.gridspec as gridspec
+
+from seahorse.core import graphfun
+from seahorse import sns
 
 from seahorse.core.figure import Fig
 from seahorse.core.gwrap import GraphAttributes, GBLibWrapper, GroupByPlotter
@@ -310,3 +313,55 @@ class SubplotsContainer(Fig) :
                 self.graph(idx).set_legend(** kwargs)
             elif idx != index :
                 self.graph(idx).remove_legend()
+
+class FacetGrid(SubplotsContainer) :
+
+    def __init__(self, data, x, y) :
+        self.xname, self.yname = x, y
+        self.xnames = tuple(sorted(data[x].unique()))
+        self.ynames = tuple(sorted(data[y].unique()))
+        super().__init__(data, len(self.xnames), len(self.ynames))
+
+        self.shs = GBLibWrapper(graphfun, self, self.gbp_iterator, True, True, False, ax_by_name=True)
+        self.sns = GBLibWrapper(sns, self, self.gbp_iterator, True, True, False, ax_by_name=True)
+        self.df = GBLibWrapper(None, self, self.gbp_iterator, True, True, True, ax_by_name=True)
+
+        self.set_square()
+
+        print (self.xnames)
+        print (self.ynames)
+
+    def ax(self, names, gname=None) :
+        x, y = names
+        xidx = self.xnames.index(x)
+        yidx = self.ynames.index(y)
+
+        idx = yidx * len(self.xnames) + xidx
+        return self.ax_idx(idx, gname)
+
+    def ax_idx(self, idx, gname=None) :
+        gname = gname or self.used_gs
+        return self.gsm[gname].get_make(idx)
+
+    def clean_graph_labels(self, ** kwargs) :
+        for ax in self.cgs :
+            ax.set_title("")
+            ax.set_xlabel("")
+            ax.set_ylabel("")
+
+        idx = len(self.xnames) * (len(self.ynames) - 1) - 1
+        for name in self.xnames :
+            idx += 1
+            ax = self.ax_idx(idx)
+            ax.set_xlabel(name, ** kwargs)
+
+        for idx, name in enumerate(self.ynames) :
+            idx = len(self.ynames) * idx
+            ax = self.ax_idx(idx)
+            ax.set_ylabel(name, ** kwargs)            
+
+    @property
+    def gbp_iterator(self) :
+        return GroupByPlotter(self.data, self, (self.xname, self.yname)).iterator
+
+

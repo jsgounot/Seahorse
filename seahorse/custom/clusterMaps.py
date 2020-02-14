@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2018-12-20 13:35:31
 # @Last modified by:   jsgounot
-# @Last Modified time: 2019-04-30 10:04:46
+# @Last Modified time: 2019-06-26 13:33:29
 
 import pandas as pd
 from seahorse import Fig, Graph, cmap_from_color
@@ -24,6 +24,7 @@ class ClusterMap(Fig) :
 
         graph = self.heatmap_graph
         if rm_yticks : graph.remove_yticks()
+
         if rotatex is not None : graph.apply_xticklabels(rotation=rotatex)
         if rotatey is not None : graph.apply_yticklabels(rotation=rotatey)
 
@@ -56,7 +57,7 @@ class ClusterMap(Fig) :
     def data(self):
         return ClusterMap.reorder_df_clustermap(self.raw_data,
             self.clusterobj)
-    
+
     @staticmethod
     def reorder_df_clustermap(df, clusterobj) :
     
@@ -75,6 +76,10 @@ class ClusterMap(Fig) :
             pass
 
         return df
+
+    def heatmap_labels(self, xlabel, ylabel, ** kwargs) :
+        graph = Graph(ax=self.heatmap_ax)
+        graph.set_labels(xlabel, ylabel, ** kwargs)
 
 class DiscreteClusterMap(ClusterMap) :
 
@@ -130,7 +135,7 @@ class GenomeMap(ClusterMap) :
 
         super().__init__(* args, ** kwargs)
 
-        if use_chroname : self.heatmap_graph.set_xticks(* list(zip(* self.ticksinfo)), rotation=45)
+        if use_chroname : self.heatmap_ax.set_xticks(* list(zip(* self.ticksinfo)))
         self.set_lines(xhue, ** kwargs_line)
 
     def transform_data(self, data, x, y, xhue, value, na_value) :

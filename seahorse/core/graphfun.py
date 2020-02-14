@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2018-05-16 13:53:18
 # @Last modified by:   jsgounot
-# @Last Modified time: 2019-05-28 10:46:33
+# @Last Modified time: 2019-06-25 16:57:24
 
 # http://patorjk.com/software/taag/#p=display&v=3&f=Calvin%20S&t=barplot
 # Calvin S
@@ -115,7 +115,7 @@ def plot_cat(df, y, xhue, ax, yhue=None, color=None, legend=True, fill=False, pa
         colors = {}
         for idx, group in enumerate(df.groupby(yhue)) :
             name, sdf = group
-            color = palette[idx] if palette else sns.color_palette()[idx]
+            color = color or (palette[idx] if palette else sns.color_palette()[idx])
             plot_cat(sdf, y, xhue, ax, None, color, legend=legend, fill=fill, ** kwargs)
             colors[name] = color
 
@@ -170,7 +170,9 @@ def cat_plot(x, y, xhue, data, ax, yhue=None, funsort=None, legend=True, tick_ro
     df["gposi"] = df.apply(lambda row : additionner[row[xhue]] + row[x], axis=1)
 
     # plot data
-    plot_cat(df[df["cat_show"] == True], y, xhue, ax, yhue, None, legend, fill, palette, ** kwargs)
+    color = kwargs.get("color", None)
+    kwargs = {key : value for key, value in kwargs.items() if key not in ("color",)}    
+    plot_cat(df[df["cat_show"] == True], y, xhue, ax, yhue, color, legend, fill, palette, ** kwargs)
 
     # add ticks and labels
     ticksinfo = [(name, (sdf["gposi"].min() + sdf["gposi"].max()) / 2.) for name, sdf in df.groupby(xhue)]
@@ -454,7 +456,7 @@ def remove_non_number(df, columns) :
     return df
 
 def scatterplot(data, ax, col1, col2, ccol=None, ccolname=None, hue=None, huecol=None, titlehue=True, 
-        kws_scatter={}, kwg_corr={}, ** kwg_regplot) :
+        hue_order=None, kws_scatter={}, kwg_corr={}, ** kwg_regplot) :
         
     # To use until I change my seaborn version
     # since they add a scatterplot function now : https://seaborn.pydata.org/generated/seaborn.scatterplot.html
@@ -483,9 +485,11 @@ def scatterplot(data, ax, col1, col2, ccol=None, ccolname=None, hue=None, huecol
         if color is not None and not huecol :
             huecol = {hname : color[idx] for idx, hname in enumerate(df[hue].unique())}
 
-        for sname, sdf in df.groupby(hue) :
-            color = huecol[sname] if huecol and sname in huecol else None
-            sns.regplot(col1, col2, data=sdf, ax=ax, label=sname, color=color, ** kwg_regplot)
+        hue_order = hue_order or sorted(df[hue].unique())
+        for hue_value in hue_order :
+            sdf = df[df[hue] == hue_value]
+            color = huecol[hue_value] if huecol and hue_value in huecol else None
+            sns.regplot(col1, col2, data=sdf, ax=ax, label=hue_value, color=color, ** kwg_regplot)
         
         ax.legend()
 
