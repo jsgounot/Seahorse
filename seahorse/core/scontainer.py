@@ -2,9 +2,12 @@
 # @Author: jsgounot
 # @Date:   2019-03-29 15:52:33
 # @Last modified by:   jsgounot
-# @Last Modified time: 2019-06-06 16:01:12
+# @Last Modified time: 2020-03-13 16:54:11
 
+from itertools import product
 import matplotlib.gridspec as gridspec
+
+import pandas as pd
 
 from seahorse.core import graphfun
 from seahorse import sns
@@ -204,6 +207,17 @@ class SubplotsContainer(Fig) :
     def add_gs(self, name, * args, ** kwargs) :
         gs = gridspec.GridSpec(* args, ** kwargs)
         self.gsm[name] = GSManager(gs, self.add_subplot)
+
+    # ---------------------------------------------------------------
+    # Utility functions
+
+    def fill_combinations(df, columns, cvalue, value) :
+        if len(columns) < 2 : raise ValueError("columns length must higher than 1")
+        data = []
+        for combination in product(*[df[column] for column in columns]) :
+            data.append({cvalue : value, ** {column : combination[idx] for idx, column in enumerate(columns)}})
+        df = pd.concat((df, pd.DataFrame(data)))
+        return df.drop_duplicates(columns)
   
     # ---------------------------------------------------------------
 
