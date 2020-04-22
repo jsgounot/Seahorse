@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2018-05-16 13:53:18
 # @Last modified by:   jsgounot
-# @Last Modified time: 2019-06-25 16:57:24
+# @Last Modified time: 2020-04-22 14:33:30
 
 # http://patorjk.com/software/taag/#p=display&v=3&f=Calvin%20S&t=barplot
 # Calvin S
@@ -629,3 +629,26 @@ class PairwiseHeatmap() :
 
 def pairwise_heatmap(value, hue, data, ax, ** kwargs) :
     return PairwiseHeatmap(data, value, hue, ax, ** kwargs)
+
+
+"""
+╔═╗┬┌─┐╔═╗┬ ┬┌─┐┬─┐┌┬┐
+╠═╝│├┤ ║  ├─┤├─┤├┬┘ │ 
+╩  ┴└─┘╚═╝┴ ┴┴ ┴┴└─ ┴ 
+"""
+
+def pie(x, data, ax, labels=None, explode={}, equal=True, ** kwargs) :
+        # A wrapper pour matplotlib ax.pie but using a dataframe as input
+
+        kwargs.setdefault("x", data[x])
+
+        if labels :
+            kwargs.setdefault("labels", data[labels])
+            kwargs.setdefault("explode", [explode.get(label, 0) for label in data[labels]])
+        
+        kwargs.setdefault("autopct", "%1.1f%%")
+        kwargs.setdefault("startangle", 90)
+
+        ax.pie(** kwargs)
+        if equal : ax.axis('equal')
+
