@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2018-05-16 13:53:18
 # @Last modified by:   jsgounot
-# @Last Modified time: 2020-04-22 14:33:30
+# @Last Modified time: 2020-04-22 14:35:56
 
 # http://patorjk.com/software/taag/#p=display&v=3&f=Calvin%20S&t=barplot
 # Calvin S
@@ -638,7 +638,7 @@ def pairwise_heatmap(value, hue, data, ax, ** kwargs) :
 """
 
 def pie(x, data, ax, labels=None, explode={}, equal=True, ** kwargs) :
-        # A wrapper pour matplotlib ax.pie but using a dataframe as input
+        # A wrapper for matplotlib ax.pie but using a dataframe as input
 
         kwargs.setdefault("x", data[x])
 
