@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2018-05-16 13:53:18
 # @Last modified by:   jsgounot
-# @Last Modified time: 2020-04-22 14:35:56
+# @Last Modified time: 2020-04-22 15:22:51
 
 # http://patorjk.com/software/taag/#p=display&v=3&f=Calvin%20S&t=barplot
 # Calvin S
@@ -637,10 +637,19 @@ def pairwise_heatmap(value, hue, data, ax, ** kwargs) :
 ╩  ┴└─┘╚═╝┴ ┴┴ ┴┴└─ ┴ 
 """
 
-def pie(x, data, ax, labels=None, explode={}, equal=True, ** kwargs) :
+def pie(x, data, ax, labels=None, explode={}, equal=True, colors=None, ** kwargs) :
         # A wrapper for matplotlib ax.pie but using a dataframe as input
 
         kwargs.setdefault("x", data[x])
+
+        # colors can be a dict, usefull if scontainer is used
+        if colors :
+            colors = graph_utils.colors_from_arg(colors, data, labels)
+            kwargs["colors"] = colors
+
+        # in case of scontainer usage
+        # color argument is provided by scontainer process
+        kwargs.pop("color", None)
 
         if labels :
             kwargs.setdefault("labels", data[labels])

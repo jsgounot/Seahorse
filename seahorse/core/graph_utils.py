@@ -2,7 +2,9 @@
 # @Author: jsgounot
 # @Date:   2018-05-16 13:53:18
 # @Last modified by:   jsgounot
-# @Last Modified time: 2019-04-11 17:49:13
+# @Last Modified time: 2020-04-22 15:21:07
+
+from collections import Mapping, Iterable
 
 from numpy import isfinite, isnan, pi
 
@@ -119,10 +121,41 @@ def cmap_from_color(colors) :
 def color_palette(* args, ** kwargs) :
     return sns.color_palette(* args, ** kwargs)
 
+def color_palette_mapping(elements, * args, ** kwargs) :
+    cpal = color_palette(* args, ** kwargs)
+    elements = sorted(set(elements))
+    return {element : cpal[idx] for idx, element in enumerate(elements)}
+
 def palette_ten() :
     colors = ["#4C72B0", "#DD8452", "#55A868", "#C44E52", "#8172B3", 
     "#937860", "#DA8BC3", "#8C8C8C", "#CCB974", "#64B5CD"]
     return sns.color_palette(colors)
+
+def colors_from_arg(colors, df, column) :
+    # mimic all possibilites from colors argument from seahorse
+    # something which should be used in all function ?
+
+    error_message = """ Colors can be either a string (dataframe column name),
+    a mapping object (correspondance to x values) or an iterable (colors list)
+    """
+
+    if isinstance(colors, str) :
+        if colors == column :
+            colors = color_palette_mapping(df[column])
+        elif colors in df.columns :
+            return list(df[colors])
+        else :
+            raise ValueError(error_message)
+
+    elif isinstance(colors, Mapping) :
+        return [colors[element] for element in df[column]]
+
+    elif isinstance(colors, Iterable) :
+        return colors
+
+    else :
+        raise ValueError(error_message)
+
 
 """
 ┬  ┌─┐┌─┐┌─┐┌┐┌┌┬┐
