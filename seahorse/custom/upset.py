@@ -306,26 +306,88 @@ class PyUpsetDic(PyUpset) :
         self.ax_dist_barplot.spines['left'].set_visible(False)
         self.ax_dist_barplot.spines['top'].set_visible(False)
 
+class CounterHue() :
+
+    def __init__(self, counters_dict, merged) :
+        # we reverse the dict
+        self.merged = merged
+        
+        self.data = defaultdict(dict)
+        for hue, counter in counters_dict.items() :
+            for key, value in counter.items() :
+                self.data[key][hue] = value
+
+        self.counter = Counter(dict(self.iterator()))
+        self.hues = sorted(set(counters_dict))
+            
+    def iterator(self) :
+        for element, subdic in self.data.items() :
+            if self.merged :
+                yield element, sum(subdic.values())
+            else :
+                for hue, value in subdic.items() :
+                    yield (element, hue), value
+
+    def most_common(self, * args, ** kwargs) :
+        # debug warning : results can be kind of different based on merged 
+        return self.counter.most_common(* args, ** kwargs)
+
+    def names(self, size) :
+        elements = self.most_common(size)
+        elements = (element[0] if self.merged else element[0][0] for element in elements)
+        return sorted({name for names in elements for name in names})
+
+    def bar_data(self, ncount, hcolor) :
+        # if merged, a dataframe is required as data
+        # while if not, a serie is required
+
+        mc = self.most_common(int(ncount))
+
+        if self.merged :
+            data = [{hue : self.data[element[0]].get(hue, 0) for hue in self.hues} for element in mc]
+            data = pd.DataFrame(data)
+            colors = [hcolor[column] for column in data.columns]
+
+        else :
+            data = {idx : element[1] for idx, element in enumerate(mc)}
+            data = pd.Series(data)
+            colors = [hcolor[element[0][1]] for element in mc]
+
+        return data, colors
+
+
 class PyUpsetHue(PyUpset) :
 
     def __init__(self, df, key, value, hue, nvalue=0, unique=True, intersection=True,
-                 griddots=False, lsize=12, maxwidth=10, palette=None, addvalue=True,
-                 boxratio=(None, None), spacers=(.1, .1), gridkwargs={}, legend=True) :
+                 griddots=False, lsize=12, maxwidth=10, palette=None, addvalue=True, 
+                 stack_vertical=False, stack_horizontal=True, boxratio=(None, None), 
+                 spacers=(.1, .1), gridkwargs={}, legend=True) :
 
         self.df = df 
         self.key = key
         self.value = value
         self.hue = hue
+        
+        # note thant stack_vertical and stack_horizontal does not have the same behavior
+        # while stack horizontal will just make a stacked barplot of the horizontal values
+        # stack vertical will merge groups from different hue and display variation in the barplot insted
+
+        self.stack_vertical = stack_vertical
+        self.stack_horizontal = stack_horizontal
 
         self.maxwidth = maxwidth
-        self.addvalue = addvalue
+        self.addvalue = addvalue 
         self.legend = legend
         self.palette = palette or seahorse.color_palette()
+
+        if stack_vertical == True : 
+            self.addvalue = False
 
         self.create_fig()
         self.init_ui(boxratio, spacers, False)
         self.sim = self.get_sim(intersection, unique)
-        
+        self.hcolor = {hue : self.palette[idx] for idx, hue in enumerate(self.sim.hues)}
+
         self.make_dist_barplot(nvalue, lsize=lsize)
         self.make_comb_barplot(lsize=lsize)
         if griddots : self.make_grid_dots()
@@ -336,19 +398,17 @@ class PyUpsetHue(PyUpset) :
     """
 
     def get_sim(self, intersection, unique) :
-        return {hue : PyUpset.get_sim_df(df, self.key, self.value, intersection, unique)
+        values = {hue : PyUpset.get_sim_df(df, self.key, self.value, intersection, unique)
             for hue, df in self.df.groupby(self.hue)}
 
-    def get_most_common(self, fill) :
-        sim_values = [(name, size, hue) for hue, sim in self.sim.items()
-            for name, size in sim.most_common(int(fill))]
+        return CounterHue(values, self.stack_vertical)
 
-        return sorted(sim_values, key = lambda x : x[1], reverse=True)[:int(fill)]
+    def get_most_common(self, fill) :
+        return self.sim.most_common(int(fill))
 
     @property
     def names(self):
-        return sorted({name for names, count, hue in self.get_most_common(self.maxwidth)
-            for name in names}) 
+        return self.sim.names(self.maxwidth)
 
     """
     Basic plots
@@ -361,7 +421,8 @@ class PyUpsetHue(PyUpset) :
         df = pd.pivot_table(df, index=self.value, columns=self.hue, values="__count__")
         df.reindex(self.names)
 
-        df.plot.barh(ax=self.ax_dist_barplot, legend=False)
+        colors = [self.hcolor[column] for column in df.columns]
+        df.plot.barh(ax=self.ax_dist_barplot, legend=False, stacked=self.stack_horizontal, color=colors)
 
         self.ax_dist_barplot.set_facecolor('white')
         self.ax_dist_barplot.invert_xaxis()
@@ -374,22 +435,12 @@ class PyUpsetHue(PyUpset) :
 
     def make_comb_barplot(self, lsize=15) :
 
-        values = {}
         fill = self.ncombi if self.ncombi < self.maxwidth else self.maxwidth
-        sim_values = self.get_most_common(fill)    
-        hues = sorted(self.df[self.hue].unique())
-        colors = []
 
-        for idx in range(int(fill)) :
-            try : 
-                values[idx] = sim_values[idx][1]
-                colors.append(self.palette[hues.index(sim_values[idx][2])])
-            
-            except IndexError : 
-                values[idx] = 0
+        data, colors = self.sim.bar_data(fill, self.hcolor)
+        kwargs = {"stacked" : True} if self.stack_vertical else {}
+        data.plot.bar(ax=self.ax_comb_barplot, color=colors, legend=False, ** kwargs)
 
-        s = pd.Series(values)
-        s.plot.bar(ax=self.ax_comb_barplot, color=colors, legend=False)
         self.ax_comb_barplot.set_facecolor('white')
         plt.setp(self.ax_comb_barplot.get_xticklabels(), visible=False)
         self.ax_comb_barplot.set_ylabel("Intersection size", size=lsize)
@@ -397,7 +448,7 @@ class PyUpsetHue(PyUpset) :
 
         # add legend
         if self.legend :
-            colors = {hue : self.palette[idx] for idx, hue in enumerate(sorted(hues))}
+            colors = {hue : self.palette[idx] for idx, hue in enumerate(sorted(self.sim.hues))}
             seahorse.basic_legend(self.ax_comb_barplot, colors)
 
         self.ax_comb_barplot.spines['right'].set_visible(False)
@@ -409,7 +460,12 @@ class PyUpsetHue(PyUpset) :
 
     def make_grid_dots(self, dcolor="grey", tcolor="black", lwidth=3) :
         fill = self.ncombi if self.ncombi < self.maxwidth else self.maxwidth
-        sorted_combinations = [c[0] for c in self.get_most_common(int(fill))]
+        
+        if self.stack_vertical :
+            sorted_combinations = [c[0] for c in self.get_most_common(int(fill))]
+        else :
+            sorted_combinations = [c[0][0] for c in self.get_most_common(int(fill))]
+        
         width = len(sorted_combinations) if len(sorted_combinations) > fill else fill
 
         # Grey dots
@@ -433,7 +489,11 @@ class PyUpsetHue(PyUpset) :
         # draw the grid as a heatmap
 
         fill = self.ncombi if self.ncombi < self.maxwidth else self.maxwidth
-        sorted_combinations = [c[0] for c in self.get_most_common(int(fill))]
+        
+        if self.stack_vertical :
+            sorted_combinations = [c[0] for c in self.get_most_common(int(fill))]
+        else :
+            sorted_combinations = [c[0][0] for c in self.get_most_common(int(fill))]
 
         hm_data = []
         columns = self.names
