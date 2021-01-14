@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2018-05-16 13:53:18
 # @Last modified by:   jsgounot
-# @Last Modified time: 2020-12-09 21:48:11
+# @Last Modified time: 2021-01-14 15:46:11
 
 # http://patorjk.com/software/taag/#p=display&v=3&f=Calvin%20S&t=barplot
 # Calvin S
@@ -18,6 +18,7 @@ import matplotlib.lines as mlines
 from matplotlib.collections import PathCollection
 
 from scipy.optimize import curve_fit
+from scipy.stats import pearsonr, spearmanr
 
 from seahorse.core import graph_utils, constants
 from seahorse.core.gwrap import sns
@@ -444,6 +445,48 @@ def non_linear_reg(fun, col1, col2, data, ax, kwargs_cfit={}, yvalues_plot=None,
     res["nlr_y"] = yvalues
 
     return res
+
+"""
+╔═╗┌─┐┬─┐┬─┐┌─┐┬  ┌─┐┌┬┐┬┌─┐┌┐┌
+║  │ │├┬┘├┬┘├┤ │  ├─┤ │ ││ ││││
+╚═╝└─┘┴└─┴└─└─┘┴─┘┴ ┴ ┴ ┴└─┘┘└┘
+"""
+
+def corrplot(data, ax, x, y, law="pearson", diagonal=True, annotate=True, share_lim=True,
+        line_kwg={}, text_kwg={}, ** kwargs) :
+
+    # Plot correlation data and annotate using pearson or spearman correlation value
+    funs = {"pearson" : pearsonr, "spearman" : spearmanr}
+    if annotate and law not in funs :
+        raise Exception("Law must be either pearson of spearman")
+
+    x = data[x]
+    y = data[y]
+
+    sns.scatterplot(x=x, y=y, ax=ax, ** kwargs)
+
+    if share_lim :
+        min_lim = min(ax.get_xlim()[0], ax.get_ylim()[0])
+        max_lim = max(ax.get_xlim()[1], ax.get_ylim()[1])
+
+        ax.set_xlim((min_lim, max_lim))
+        ax.set_ylim((min_lim, max_lim))
+
+    if diagonal :
+        kwg = {"linestyle" : "--", "linewidth" : .5, "color" : "#ca472f"}
+        kwg.update(line_kwg)
+        ax.plot([min_lim, max_lim], [min_lim, max_lim], ** kwg)
+
+    if annotate :
+        fun = funs[law]
+        coef, pvalue = fun(x, y)
+        
+        line = "{law} coefficient : {coef:.2f}\nP-value : {pvalue:.2E}".format(
+            law=law.title(), coef=coef, pvalue=pvalue)
+
+        kwg = {"x" : 0.05, "y" : 0.9, "s" : line, "ha" : "left", "transform" : ax.transAxes}
+        kwg.update(text_kwg)
+        ax.text(** kwg)
 
 """
 ┌─┐┌─┐┌─┐┌┬┐┌┬┐┌─┐┬─┐┌─┐┬  ┌─┐┌┬┐

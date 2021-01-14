@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2019-03-29 15:53:50
 # @Last modified by:   jsgounot
-# @Last Modified time: 2020-04-22 16:05:50
+# @Last Modified time: 2021-01-14 15:36:38
 
 import os
 
@@ -76,7 +76,7 @@ class Fig() :
         plt.show(self.fig, * args, ** kwargs)
 
     def save(self, fname, tab=True, ** kwargs) :
-        kwargs = {"dpi": 120, "alpha": 0.5, ** kwargs}
+        kwargs = {"dpi": 120, ** kwargs}
 
         self.fig.savefig(fname, ** kwargs)
 
@@ -91,7 +91,7 @@ class Fig() :
 
     @staticmethod
     def save_pdfs(fname, figs, * args, ** kwargs) :
-        kwargs = {"dpi":120, "alpha":0.5, ** kwargs}
+        kwargs = {"dpi":120, ** kwargs}
         with PdfPages(fname) as pdf :
             for fig in figs :
                 pdf.savefig(fig.fig, * args, ** kwargs)
