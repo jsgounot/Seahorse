@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2019-03-29 15:55:41
 # @Last modified by:   jsgounot
-# @Last Modified time: 2021-01-14 15:33:21
+# @Last Modified time: 2021-02-03 16:58:18
 
 import numpy as np
 from matplotlib.ticker import FuncFormatter
@@ -156,6 +156,13 @@ class Graph(Fig) :
         if x : self.ax.set_xlim(x)
         if y : self.ax.set_ylim(y)
 
+    def share_ax_lim(self) :
+        min_lim = min(self.ax.get_xlim()[0], self.ax.get_ylim()[0])
+        max_lim = max(self.ax.get_xlim()[1], self.ax.get_ylim()[1])
+
+        self.ax.set_xlim((min_lim, max_lim))
+        self.ax.set_ylim((min_lim, max_lim))
+
     def adjust_edge_margins(self, edge, prc=True, value=0.01) :
         if edge not in ["top", "bot", "left", "right"] :
             raise ValueError("Edge must be top, bot, left or right")
@@ -204,3 +211,32 @@ class Graph(Fig) :
             x = p.get_x() + p.get_width() / 2.
             self.ax.text(x, height + spacer, str(height_name), ha="center",
             va="bottom", rotation=rotation, **kwg_text)
+
+    """
+    utility functions
+    """
+
+    def add_xticks_ncount(self, column, df=None, fun=None) :
+        df = df or self.data
+        counts = df.groupby(column).size().to_dict()
+        nticks = []
+        for element in self.ax.get_xticklabels() :
+            name = element.get_text()
+            count = counts[name]
+            if fun :
+                new = fun(name, count)
+            else :
+                new = name + "\n(N = %i)" %(count)
+            nticks.append(new)
+        self.ax.set_xticklabels(nticks)
+
+    def change_bars_width(self, new_prop) :
+        for patch in self.ax.patches :
+            current_width = patch.get_width()
+            diff = current_width - new_prop
+
+            # we change the bar width
+            patch.set_width(new_prop)
+
+            # we recenter the bar
+            patch.set_x(patch.get_x() + diff * .5)
