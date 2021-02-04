@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2018-12-21 10:49:13
 # @Last modified by:   jsgounot
-# @Last Modified time: 2019-04-10 16:47:12
+# @Last Modified time: 2021-02-03 18:55:55
 
 import numpy as np
 from seahorse import Graph, Fig, sns
@@ -86,8 +86,7 @@ class ScatterDist(Fig) :
         if "y" in used_kwargs :
             used_kwargs["x"], used_kwargs["y"] = used_kwargs["y"], c2v
         else :
-            used_kwargs["orient"] = "v"
-            used_kwargs["x"] = c2v
+            used_kwargs["y"] = c2v
 
         graph = Graph(ax=self.ax_right_dist, data=self.df)
         getattr(graph.sns, method)(** used_kwargs) 
