@@ -2,10 +2,11 @@
 # @Author: jsgounot
 # @Date:   2019-03-29 15:55:41
 # @Last modified by:   jsgounot
-# @Last Modified time: 2021-02-03 16:58:18
+# @Last Modified time: 2021-06-09 16:20:34
 
 import numpy as np
 from matplotlib.ticker import FuncFormatter
+from matplotlib.patches import PathPatch
 
 from seahorse import sns
 from seahorse.core.figure import Fig
@@ -132,7 +133,7 @@ class Graph(Fig) :
     def legend_outside(self, ** kwargs) :
         kwargs.setdefault("loc", "upper left")
         kwargs.setdefault("bbox_to_anchor", (1, 1))
-        kwargs.setdefault("prop", {"size" : 15})
+        #kwargs.setdefault("prop", {"size" : 15})
         self.set_legend(** kwargs)
 
     """
@@ -217,7 +218,7 @@ class Graph(Fig) :
     """
 
     def add_xticks_ncount(self, column, df=None, fun=None) :
-        df = df or self.data
+        df = df if df is not None else self.data
         counts = df.groupby(column).size().to_dict()
         nticks = []
         for element in self.ax.get_xticklabels() :
@@ -226,7 +227,7 @@ class Graph(Fig) :
             if fun :
                 new = fun(name, count)
             else :
-                new = name + "\n(N = %i)" %(count)
+                new = name + "\n(N=%i)" %(count)
             nticks.append(new)
         self.ax.set_xticklabels(nticks)
 
@@ -240,3 +241,33 @@ class Graph(Fig) :
 
             # we recenter the bar
             patch.set_x(patch.get_x() + diff * .5)
+
+    def change_boxplot_width(self, fac=.9) :
+        # https://github.com/mwaskom/seaborn/issues/1076
+        # https://stackoverflow.com/questions/56838187/how-to-create-spacing-between-same-subgroup-in-seaborn-boxplot
+
+        # TODO : Only work for horrizontal boxplot
+        # Need to be adjusted in case of vertical ones
+
+        for c in self.ax.get_children():
+            # searching for PathPatches
+            if isinstance(c, PathPatch):
+                # getting current width of box:
+                p = c.get_path()
+                verts = p.vertices
+                verts_sub = verts[:-1]
+                xmin = np.min(verts_sub[:, 0])
+                xmax = np.max(verts_sub[:, 0])
+                xmid = 0.5 * (xmin+xmax)
+                xhalf = 0.5 * (xmax - xmin)
+
+                # setting new width of box
+                xmin_new = xmid - fac * xhalf
+                xmax_new = xmid + fac * xhalf
+                verts_sub[verts_sub[:, 0] == xmin, 0] = xmin_new
+                verts_sub[verts_sub[:, 0] == xmax, 0] = xmax_new
+
+                # setting new width of median line
+                for l in self.ax.lines:
+                    if np.all(l.get_xdata() == [xmin, xmax]):
+                        l.set_xdata([xmin_new, xmax_new])
