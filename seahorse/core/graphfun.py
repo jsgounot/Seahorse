@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2018-05-16 13:53:18
 # @Last modified by:   jsgounot
-# @Last Modified time: 2021-04-21 20:55:47
+# @Last Modified time: 2021-09-06 12:39:36
 
 # http://patorjk.com/software/taag/#p=display&v=3&f=Calvin%20S&t=barplot
 # Calvin S
@@ -46,8 +46,8 @@ def plot(x, y, data, ax, hue=None, palette=None, fill=0, fbeetween=None, ** kwar
     kwargs["color"] = colors
     r = data.plot(ax=ax, ** kwargs)
 
-def draw_diagonal(ax, data=None, ** kwargs) :
-    ax.plot([0, 1], [0, 1], transform=ax.transAxes, ** kwargs)
+def draw_diagonal(ax, data=None, fmt="-", ** kwargs) :
+    ax.plot([0, 1], [0, 1], fmt, transform=ax.transAxes, ** kwargs)
 
 """
 ╔═╗┌─┐┬  ┌─┐┬─┐┌─┐┌┬┐  ╦═╗┌─┐┌─┐┌─┐┬  ┌─┐┌┬┐
