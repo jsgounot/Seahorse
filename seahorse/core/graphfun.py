@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2018-05-16 13:53:18
 # @Last modified by:   jsgounot
-# @Last Modified time: 2021-01-25 10:30:12
+# @Last Modified time: 2021-04-21 20:55:47
 
 # http://patorjk.com/software/taag/#p=display&v=3&f=Calvin%20S&t=barplot
 # Calvin S
@@ -705,3 +705,20 @@ def pie(x, data, ax, labels=None, explode={}, equal=True, colors=None, ** kwargs
         ax.pie(** kwargs)
         if equal : ax.axis('equal')
 
+
+def donut(var, value, ax, data, width=.2, opening=0.1, palette=None, ** kwargs) :
+    labels, values = list(data[var]), list(data[value])
+    if palette : colors = palette[:len(labels)]
+    else : colors = sns.color_palette()[:len(labels)] 
+    
+    if opening :
+        if opening < 1 : raise Exception("Opening value must be < 1")
+        opening_value = int(sum(values) * opening)
+        labels.append("")
+        values.append(opening_value)
+        colors.append("white")
+    
+    ax.pie(values, labels=labels, colors=colors, ** kwargs)
+
+    circle = Circle( (0,0), 1-width, color='white')
+    ax.add_artist(circle)
