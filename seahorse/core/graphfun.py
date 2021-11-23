@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2018-05-16 13:53:18
 # @Last modified by:   jsgounot
-# @Last Modified time: 2021-09-06 12:39:36
+# @Last Modified time: 2021-11-23 09:53:55
 
 # http://patorjk.com/software/taag/#p=display&v=3&f=Calvin%20S&t=barplot
 # Calvin S
@@ -31,12 +31,15 @@ from seahorse.custom.venn import venn_df, venn_dic
 ╚═╝┴┴ ┴┴  ┴─┘└─┘  ┴  ┴─┘└─┘ ┴
 """
 
-def plot(x, y, data, ax, hue=None, palette=None, fill=0, fbeetween=None, ** kwargs) :
+def plot(x, y, data, ax, hue=None, palette=None, color=None, fill=0, fbeetween=None, ** kwargs) :
     # Similar to pandas.plot (using behind) function but with the correct argument
     # Meaning that you can use x, y and hue, and you don't have to transform the df before
 
     if hue : data = pd.pivot_table(data, index=x, values=y, columns=hue).fillna(fill)
     else : data = data.set_index(x)[y]
+
+    if color and palette is None:
+        palette = sns.set_palette(sns.color_palette([color]))
 
     palette = palette or sns.color_palette()
     try : colors = [palette[name] for name in data.columns] if hue else palette[0]
@@ -44,6 +47,7 @@ def plot(x, y, data, ax, hue=None, palette=None, fill=0, fbeetween=None, ** kwar
     except TypeError : colors = [palette[idx] for idx in range(len(data.columns))] if hue else palette[0]
   
     kwargs["color"] = colors
+
     r = data.plot(ax=ax, ** kwargs)
 
 def draw_diagonal(ax, data=None, fmt="-", ** kwargs) :
@@ -113,16 +117,17 @@ def custom_plt(x, y, data, ax, hue=None, legend=True, colors=None, ** kwargs) :
 
 def plot_cat(df, y, xhue, ax, yhue=None, color=None, legend=True, fill=False, palette=None, ** kwargs) :
     # special plt function for cat plot
+
     if yhue :
         colors = {}
         for idx, group in enumerate(df.groupby(yhue)) :
             name, sdf = group
-            color = color or (palette[idx] if palette else sns.color_palette()[idx])
-            plot_cat(sdf, y, xhue, ax, None, color, legend=legend, fill=fill, ** kwargs)
-            colors[name] = color
+            icolor = color or (palette[idx] if palette else sns.color_palette()[idx])
+            plot_cat(sdf, y, xhue, ax, None, icolor, legend=legend, fill=fill, ** kwargs)
+            colors[name] = icolor
 
         if legend :
-            elements = [mlines.Line2D([], [], color=color, label=label) for label, color in colors.items()]
+            elements = [mlines.Line2D([], [], color=icolor, label=label) for label, icolor in colors.items()]
             ax.legend(handles=elements)
 
     else :
@@ -172,7 +177,7 @@ def cat_plot(x, y, xhue, data, ax, yhue=None, funsort=None, legend=True, tick_ro
     df["gposi"] = df.apply(lambda row : additionner[row[xhue]] + row[x], axis=1)
 
     # plot data
-    color = kwargs.get("color", None)
+    color = kwargs.get("color", None) if palette is None else None
     kwargs = {key : value for key, value in kwargs.items() if key not in ("color",)}    
     plot_cat(df[df["cat_show"] == True], y, xhue, ax, yhue, color, legend, fill, palette, ** kwargs)
 
