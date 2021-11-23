@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2019-03-29 15:52:33
 # @Last modified by:   jsgounot
-# @Last Modified time: 2020-03-13 16:54:11
+# @Last Modified time: 2021-11-23 10:15:43
 
 from itertools import product
 import matplotlib.gridspec as gridspec
@@ -240,10 +240,10 @@ class SubplotsContainer(Fig) :
         for ax in self.cgs :
             res = []
 
-            if top : res.append(ax.is_first_row())
-            if bottom : res.append(ax.is_last_row())
-            if left : res.append(ax.is_first_col())
-            if right : res.append(ax.is_last_col())
+            if top : res.append(ax.get_subplotspec().is_first_row())
+            if bottom : res.append(ax.get_subplotspec().is_last_row())
+            if left : res.append(ax.get_subplotspec().is_first_col())
+            if right : res.append(ax.get_subplotspec().is_last_col())
 
             if union == True and all(res) != True : continue
             if union == False and any(res) != True : continue
