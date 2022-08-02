@@ -2,9 +2,11 @@
 # @Author: jsgounot
 # @Date:   2019-03-29 15:55:41
 # @Last modified by:   jsgounot
-# @Last Modified time: 2021-06-09 16:20:34
+# @Last Modified time: 2022-08-02 13:15:06
 
 import numpy as np
+from itertools import combinations
+
 from matplotlib.ticker import FuncFormatter
 from matplotlib.patches import PathPatch
 
@@ -12,6 +14,11 @@ from seahorse import sns
 from seahorse.core.figure import Fig
 from seahorse.core.gwrap import LibWrapper
 from seahorse.core import graphfun
+
+try:
+    from statannotations.Annotator import Annotator
+except ImportError:
+    print ('Unable to import Annotator from statannotations (https://github.com/trevismd/statannotations), some features might not work')
 
 class Graph(Fig) :
 
@@ -213,6 +220,36 @@ class Graph(Fig) :
             self.ax.text(x, height + spacer, str(height_name), ha="center",
             va="bottom", rotation=rotation, **kwg_text)
 
+
+    """
+    Annotator
+    """
+
+    @staticmethod
+    def get_pairs(data, main, hue=None):
+        mains = data[main].sort_values().unique()
+        
+        if hue is not None:
+            values = data.groupby(main)[hue].unique().apply(list).to_dict()
+            return (((main, hue_x), (main, hue_y))
+                    for main in mains
+                    for hue_x, hue_y in combinations(values[main], 2))
+        
+        else:
+            return combinations(mains, 2)
+        
+    def make_annot(self, x, y, hue=None, data=None, pairs=None, orient='v', test='Mann-Whitney', ** kwargs):
+        data = data or self.data
+        main = x if orient =='v' else y
+        pairs = Graph.get_pairs(data, main, hue)
+        
+        order = kwargs.pop('order', None)
+        pairs = list(pairs)    
+            
+        annotator = Annotator(self.ax, pairs, data=data, x=x, y=y, hue=hue, order=order, orient=orient)
+        annotator.configure(test=test, ** kwargs)
+        annotator.apply_and_annotate()
+
     """
     utility functions
     """
@@ -230,6 +267,20 @@ class Graph(Fig) :
                 new = name + "\n(N=%i)" %(count)
             nticks.append(new)
         self.ax.set_xticklabels(nticks)
+
+    def add_yticks_ncount(self, column, df=None, fun=None) :
+        df = df if df is not None else self.data
+        counts = df.groupby(column).size().to_dict()
+        nticks = []
+        for element in self.ax.get_yticklabels() :
+            name = element.get_text()
+            count = counts[name]
+            if fun :
+                new = fun(name, count)
+            else :
+                new = name + "\n(N=%i)" %(count)
+            nticks.append(new)
+        self.ax.set_yticklabels(nticks)
 
     def change_bars_width(self, new_prop) :
         for patch in self.ax.patches :
