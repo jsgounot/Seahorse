@@ -4,8 +4,11 @@
 # @Last modified by:   jsgounot
 # @Last Modified time: 2020-04-22 15:21:07
 
-from collections import Mapping, Iterable
-
+try: 
+    from collections import Mapping, Iterable
+except ImportError:
+    from collections.abc import Mapping, Iterable
+  
 from numpy import isfinite, isnan, pi
 
 from matplotlib.colors import ListedColormap
