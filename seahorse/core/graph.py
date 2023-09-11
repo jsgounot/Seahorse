@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2019-03-29 15:55:41
 # @Last modified by:   jsgounot
-# @Last Modified time: 2022-08-02 13:15:06
+# @Last Modified time: 2023-09-11 11:59:24
 
 import numpy as np
 from itertools import combinations
@@ -257,6 +257,7 @@ class Graph(Fig) :
     def add_xticks_ncount(self, column, df=None, fun=None) :
         df = df if df is not None else self.data
         counts = df.groupby(column).size().to_dict()
+        counts = {str(key): value for key, value in counts.items()}v
         nticks = []
         for element in self.ax.get_xticklabels() :
             name = element.get_text()
@@ -271,6 +272,7 @@ class Graph(Fig) :
     def add_yticks_ncount(self, column, df=None, fun=None) :
         df = df if df is not None else self.data
         counts = df.groupby(column).size().to_dict()
+        counts = {str(key): value for key, value in counts.items()}
         nticks = []
         for element in self.ax.get_yticklabels() :
             name = element.get_text()
