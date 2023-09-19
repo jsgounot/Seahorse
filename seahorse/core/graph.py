@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2019-03-29 15:55:41
 # @Last modified by:   jsgounot
-# @Last Modified time: 2023-09-11 11:59:24
+# @Last Modified time: 2023-09-13 11:20:10
 
 import numpy as np
 from itertools import combinations
@@ -239,7 +239,7 @@ class Graph(Fig) :
             return combinations(mains, 2)
         
     def make_annot(self, x, y, hue=None, data=None, pairs=None, orient='v', test='Mann-Whitney', ** kwargs):
-        data = data or self.data
+        data = data if data is not None else self.data
         main = x if orient =='v' else y
         pairs = Graph.get_pairs(data, main, hue)
         
