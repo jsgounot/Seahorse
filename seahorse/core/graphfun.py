@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2018-05-16 13:53:18
 # @Last modified by:   jsgounot
-# @Last Modified time: 2021-11-23 09:53:55
+# @Last Modified time: 2024-03-13 15:19:47
 
 # http://patorjk.com/software/taag/#p=display&v=3&f=Calvin%20S&t=barplot
 # Calvin S
@@ -16,6 +16,7 @@ import numpy as np
 
 import matplotlib.lines as mlines
 from matplotlib.collections import PathCollection
+from matplotlib.patches import Circle
 
 from scipy.optimize import curve_fit
 from scipy.stats import pearsonr, spearmanr
@@ -717,7 +718,7 @@ def donut(var, value, ax, data, width=.2, opening=0.1, palette=None, ** kwargs) 
     else : colors = sns.color_palette()[:len(labels)] 
     
     if opening :
-        if opening < 1 : raise Exception("Opening value must be < 1")
+        if opening >= 1 : raise Exception("Opening value must be < 1")
         opening_value = int(sum(values) * opening)
         labels.append("")
         values.append(opening_value)
