@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2018-05-16 13:53:18
 # @Last modified by:   jsgounot
-# @Last Modified time: 2024-03-13 15:19:47
+# @Last Modified time: 2024-03-20 14:13:06
 
 # http://patorjk.com/software/taag/#p=display&v=3&f=Calvin%20S&t=barplot
 # Calvin S
@@ -26,12 +26,6 @@ from seahorse.core.gwrap import sns
 from seahorse.custom.venn import venn_df, venn_dic
 
 
-"""
-╔═╗┬┌┬┐┌─┐┬  ┌─┐  ┌─┐┬  ┌─┐┌┬┐
-╚═╗││││├─┘│  ├┤   ├─┘│  │ │ │ 
-╚═╝┴┴ ┴┴  ┴─┘└─┘  ┴  ┴─┘└─┘ ┴
-"""
-
 def plot(x, y, data, ax, hue=None, palette=None, color=None, fill=0, fbeetween=None, ** kwargs) :
     # Similar to pandas.plot (using behind) function but with the correct argument
     # Meaning that you can use x, y and hue, and you don't have to transform the df before
@@ -51,14 +45,6 @@ def plot(x, y, data, ax, hue=None, palette=None, color=None, fill=0, fbeetween=N
 
     r = data.plot(ax=ax, ** kwargs)
 
-def draw_diagonal(ax, data=None, fmt="-", ** kwargs) :
-    ax.plot([0, 1], [0, 1], fmt, transform=ax.transAxes, ** kwargs)
-
-"""
-╔═╗┌─┐┬  ┌─┐┬─┐┌─┐┌┬┐  ╦═╗┌─┐┌─┐┌─┐┬  ┌─┐┌┬┐
-║  │ ││  │ │├┬┘├┤  ││  ╠╦╝├┤ │ ┬├─┘│  │ │ │ 
-╚═╝└─┘┴─┘└─┘┴└─└─┘─┴┘  ╩╚═└─┘└─┘┴  ┴─┘└─┘ ┴
- """
 
 def colored_regplot(col1, col2, data, ax, cbar=None, cbar_label=None, hue=None, hue_color=None, 
  	kws_scatter={}, kwg_corr={}, ** kwargs) :
@@ -94,12 +80,6 @@ def colored_regplot(col1, col2, data, ax, cbar=None, cbar_label=None, hue=None, 
 
     correlation = data[[col1, col2]].corr(** kwg_corr)
     return correlation
-
-"""
-╔═╗┌─┐┌┬┐┌─┐┬  ┌─┐┌┬┐
-║  ├─┤ │ ├─┘│  │ │ │ 
-╚═╝┴ ┴ ┴ ┴  ┴─┘└─┘ ┴
-"""
 
 def custom_plt(x, y, data, ax, hue=None, legend=True, colors=None, ** kwargs) :
     if hue :
@@ -206,11 +186,6 @@ def cat_plot(x, y, xhue, data, ax, yhue=None, funsort=None, legend=True, tick_ro
 
     return df.groupby(xhue).min()["gposi"].to_dict()
 
-"""
-┬┌─┌┬┐┌─┐┌─┐┬  ┌─┐┌┬┐
-├┴┐ ││├┤ ├─┘│  │ │ │ 
-┴ ┴─┴┘└─┘┴  ┴─┘└─┘ ┴ 
-"""
 
 def kdeplothue(data, ax, hue, value, palette=None, ** kwargs) :
 
@@ -219,12 +194,6 @@ def kdeplothue(data, ax, hue, value, palette=None, ** kwargs) :
         sns.kdeplot(data=sdf, ax=ax, ** kwargs)
 
     ax.legend()
-
-"""
-┌┐ ┌─┐┬─┐┌─┐┬  ┌─┐┌┬┐
-├┴┐├─┤├┬┘├─┘│  │ │ │ 
-└─┘┴ ┴┴└─┴  ┴─┘└─┘ ┴ 
-"""
 
 def barplot_twinx(left, right, data, ax, colors=None, width=.8, border_size=.5, ylabels=(None, None)) :  
     left = data[[left]] if isinstance(left, str) else data[left] 
@@ -417,12 +386,6 @@ def circular_barplot(cname, cvalue, data, ax=None, palette=None, sep_width=0.02,
 
     if grid_below : ax.set_axisbelow(True)
 
-"""
-╦  ┬┌┐┌┌─┐┌─┐┬─┐  ┬─┐┌─┐┌─┐┬─┐┌─┐┌─┐┌─┐┬┌─┐┌┐┌
-║  ││││├┤ ├─┤├┬┘  ├┬┘├┤ │ ┬├┬┘├┤ └─┐└─┐││ ││││
-╩═╝┴┘└┘└─┘┴ ┴┴└─  ┴└─└─┘└─┘┴└─└─┘└─┘└─┘┴└─┘┘└┘
-"""
-
 def non_linear_reg(fun, col1, col2, data, ax, kwargs_cfit={}, yvalues_plot=None, nid=None, * args, ** kwargs) :
     # https://stackoverflow.com/questions/46497892/non-linear-regression-in-seaborn-python
     # https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.curve_fit.html
@@ -452,21 +415,21 @@ def non_linear_reg(fun, col1, col2, data, ax, kwargs_cfit={}, yvalues_plot=None,
 
     return res
 
-"""
-╔═╗┌─┐┬─┐┬─┐┌─┐┬  ┌─┐┌┬┐┬┌─┐┌┐┌
-║  │ │├┬┘├┬┘├┤ │  ├─┤ │ ││ ││││
-╚═╝└─┘┴└─┴└─└─┘┴─┘┴ ┴ ┴ ┴└─┘┘└┘
-"""
+def draw_diagonal(data, ax, ** kwargs):
+    kwg = {"linestyle" : "--", "linewidth" : .5, "color" : "#ca472f", 'alpha': .5}
+    kwg.update(kwargs)
+    ax.plot([0, 1], [0, 1], transform=ax.transAxes, ** kwg)
 
-def corrplot(data, ax, x, y, law="pearson", diagonal=True, annotate=True, share_lim=True,
-        line_kwg={}, text_kwg={}, ** kwargs) :
+def corrplot(data, ax, x, y, fun=None, law="pearson", diagonal=True, annotate=True, share_lim=True,
+        diag_kwg={}, text_fun=None, text_kwg={}, ** kwargs) :
 
     # Plot correlation data and annotate using pearson or spearman correlation value
     funs = {"pearson" : pearsonr, "spearman" : spearmanr}
     if annotate and law not in funs :
         raise Exception("Law must be either pearson of spearman")
 
-    sns.scatterplot(x=x, y=y, ax=ax, data=data, ** kwargs)
+    fun = fun or sns.regplot
+    fun(x=x, y=y, ax=ax, data=data, ** kwargs)
 
     if share_lim :
         min_lim = min(ax.get_xlim()[0], ax.get_ylim()[0])
@@ -475,32 +438,27 @@ def corrplot(data, ax, x, y, law="pearson", diagonal=True, annotate=True, share_
         ax.set_xlim((min_lim, max_lim))
         ax.set_ylim((min_lim, max_lim))
 
-    if diagonal :
-        kwg = {"linestyle" : "--", "linewidth" : .5, "color" : "#ca472f"}
-        kwg.update(line_kwg)
-        ax.plot([min_lim, max_lim], [min_lim, max_lim], ** kwg)
+    if diagonal:
+        draw_diagonal(data, ax, ** diag_kwg)
+
+    default_text_fun = lambda law, coef, pvalue: f'{law} coefficient : {coef:.2f}\nP-value : {pvalue:.2E}'
 
     if annotate :
         x = data[x]
         y = data[y]
-        
+
         fun = funs[law]
         coef, pvalue = fun(x, y)
-        
-        line = "{law} coefficient : {coef:.2f}\nP-value : {pvalue:.2E}".format(
-            law=law.title(), coef=coef, pvalue=pvalue)
 
-        kwg = {"x" : 0.05, "y" : 0.9, "s" : line, "ha" : "left", "transform" : ax.transAxes}
+        fun = text_fun or default_text_fun
+        line = fun(law, coef, pvalue)
+
+        kwg = {"x" : 0.05, "y" : 0.9, "s" : line, "ha" : "left", "va": "top", "transform" : ax.transAxes}
         kwg.update(text_kwg)
         ax.text(** kwg)
 
-"""
-┌─┐┌─┐┌─┐┌┬┐┌┬┐┌─┐┬─┐┌─┐┬  ┌─┐┌┬┐
-└─┐│  ├─┤ │  │ ├┤ ├┬┘├─┘│  │ │ │ 
-└─┘└─┘┴ ┴ ┴  ┴ └─┘┴└─┴  ┴─┘└─┘ ┴ 
-"""
-
 def remove_non_number(df, columns) :
+    # used by scatterplot
     for column in columns :
         df = df[np.isfinite(df[column])]
     return df
@@ -547,12 +505,6 @@ def scatterplot(data, ax, col1, col2, ccol=None, ccolname=None, hue=None, huecol
         sns.regplot(col1, col2, data=df, ax=ax, ** kwg_regplot)
 
     return df[[col1, col2]].corr(** kwg_corr).iat[0,1]
-
-"""
-╔═╗╔═╗┬  ┌─┐┌┬┐
-║ ╦╠═╝│  │ │ │ 
-╚═╝╩  ┴─┘└─┘ ┴
-"""
 
 def gplot(data, ax, start="start", end="end", strand=None, kind=None, name=None, legend=True, palette={}, kwargs_arrow={}, kwargs_text={}) :
     
@@ -631,11 +583,6 @@ def plot_feature(ax, start, end, strand, name, color, track_idx, kwargs_arrow, k
         ax.text(center, track_idx + .5, name, color="black", 
             horizontalalignment="center", verticalalignment="center", ** kwargs_text)
 
-"""
-╦ ╦┌─┐┌─┐┌┬┐┌┬┐┌─┐┌─┐
-╠═╣├┤ ├─┤ │ │││├─┤├─┘
-╩ ╩└─┘┴ ┴ ┴ ┴ ┴┴ ┴┴  
-"""
 
 class PairwiseHeatmap() :
 
@@ -680,12 +627,6 @@ class PairwiseHeatmap() :
 def pairwise_heatmap(value, hue, data, ax, ** kwargs) :
     return PairwiseHeatmap(data, value, hue, ax, ** kwargs)
 
-
-"""
-╔═╗┬┌─┐╔═╗┬ ┬┌─┐┬─┐┌┬┐
-╠═╝│├┤ ║  ├─┤├─┤├┬┘ │ 
-╩  ┴└─┘╚═╝┴ ┴┴ ┴┴└─ ┴ 
-"""
 
 def pie(x, data, ax, labels=None, explode={}, equal=True, colors=None, ** kwargs) :
         # A wrapper for matplotlib ax.pie but using a dataframe as input

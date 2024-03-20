@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2018-05-16 13:53:18
 # @Last modified by:   jsgounot
-# @Last Modified time: 2020-04-22 15:21:07
+# @Last Modified time: 2024-03-20 14:12:04
 
 try: 
     from collections import Mapping, Iterable
@@ -15,12 +15,6 @@ from matplotlib.colors import ListedColormap
 from matplotlib.patches import Patch, Ellipse
 
 import seaborn as sns
-
-"""
-┌┬┐┌─┐┌┬┐┌─┐┌─┐┬─┐┌─┐┌┬┐┌─┐
- ││├─┤ │ ├─┤├┤ ├┬┘├─┤│││├┤ 
-─┴┘┴ ┴ ┴ ┴ ┴└  ┴└─┴ ┴┴ ┴└─┘
-"""
 
 def remove_non_number(df, columns) :
     df = df.dropna(axis=0, how="any")
@@ -36,11 +30,8 @@ def remove_non_number(df, columns) :
 
     return df
 
-"""
-┬  ┌─┐┌┐ ┌─┐┬    ┌┬┐┌─┐┌┬┐
-│  ├─┤├┴┐├┤ │     │││ │ │ 
-┴─┘┴ ┴└─┘└─┘┴─┘  ─┴┘└─┘ ┴ 
-"""
+# -------------------------
+# Graph dist
 
 class GraphDist() :
     # Graphical distance in a plot
@@ -112,11 +103,8 @@ def label_dots(ax, dic={}, xaxis=True, size=12, axgap=10, padticks=20, defaultco
     ax.tick_params(pad=padticks)
     return fdic
 
-"""
-┌─┐┌─┐┬  ┌─┐┬─┐┌─┐
-│  │ ││  │ │├┬┘└─┐
-└─┘└─┘┴─┘└─┘┴└─└─┘
-"""
+# -------------------------
+# Colors
 
 def cmap_from_color(colors) :
     return ListedColormap(colors)
@@ -160,11 +148,8 @@ def colors_from_arg(colors, df, column) :
         raise ValueError(error_message)
 
 
-"""
-┬  ┌─┐┌─┐┌─┐┌┐┌┌┬┐
-│  ├┤ │ ┬├┤ │││ ││
-┴─┘└─┘└─┘└─┘┘└┘─┴┘
-"""
+# -------------------------
+# Legend
 
 
 def basic_legend(ax, names_color, * args, ** kwargs) :
