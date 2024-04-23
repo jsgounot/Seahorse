@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2018-05-16 13:53:18
 # @Last modified by:   jsgounot
-# @Last Modified time: 2024-03-20 14:13:06
+# @Last Modified time: 2024-03-25 18:53:52
 
 # http://patorjk.com/software/taag/#p=display&v=3&f=Calvin%20S&t=barplot
 # Calvin S
@@ -505,6 +505,36 @@ def scatterplot(data, ax, col1, col2, ccol=None, ccolname=None, hue=None, huecol
         sns.regplot(col1, col2, data=df, ax=ax, ** kwg_regplot)
 
     return df[[col1, col2]].corr(** kwg_corr).iat[0,1]
+
+def volcano(data, ax, x, y, xc, yc, colors=None, linestyles={}, 
+    hlc=None, hl=None, ** kwargs):    
+    
+    # You can heighleight some specific rows
+    # hlc = Highlight column to look at
+    # hl = Highlight values
+
+    colors = colors or ['#EE0607', '#3F68E1', '#228C21', '#4C4C4C', '#097969']
+    
+    ax.axhline(yc, color='black', linestyle='--', linewidth=1, ** linestyles)
+    ax.axvline(xc, color='black', linestyle='--', linewidth=1, ** linestyles)
+    ax.axvline(xc * -1, color='black', linestyle='--', linewidth=1, ** linestyles)
+    
+    sdata = data[(data[x].abs() >= xc) & (data[y] >= yc)]
+    if not sdata.empty: sns.scatterplot(data=sdata, x=x, y=y, ax=ax, color=colors[0], alpha=.5, ** kwargs)
+    
+    sdata = data[(data[x].abs() < xc) & (data[y] >= yc)]
+    if not sdata.empty: sns.scatterplot(data=sdata, x=x, y=y, ax=ax, color=colors[1], alpha=.5, ** kwargs)
+    
+    sdata = data[(data[x].abs() >= xc) & (data[y] < yc)]
+    if not sdata.empty: sns.scatterplot(data=sdata, x=x, y=y, ax=ax, color=colors[2], alpha=.5, ** kwargs)
+    
+    sdata = data[(data[x].abs() < xc) & (data[y] < yc)]
+    if not sdata.empty: sns.scatterplot(data=sdata, x=x, y=y, ax=ax, color=colors[3], alpha=.5, ** kwargs)
+
+    if hl is not None and hlc is not None:
+        sdata = data[data[hlc].isin(hl)]
+        if not sdata.empty:
+            sns.scatterplot(data=sdata, x=x, y=y, ax=ax, color=colors[4], alpha=.5, ** kwargs)
 
 def gplot(data, ax, start="start", end="end", strand=None, kind=None, name=None, legend=True, palette={}, kwargs_arrow={}, kwargs_text={}) :
     
