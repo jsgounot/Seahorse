@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2019-03-29 15:55:41
 # @Last modified by:   jsgounot
-# @Last Modified time: 2023-10-30 09:51:16
+# @Last Modified time: 2024-05-23 15:12:59
 
 import numpy as np
 from itertools import combinations
@@ -240,6 +240,10 @@ class Graph(Fig) :
         
     def make_annot(self, x, y, hue=None, data=None, pairs=None, orient='v', test='Mann-Whitney', ** kwargs):
         data = data if data is not None else self.data
+
+        if data is None:
+            raise Exception("Graph data can't be set to None")
+
         main = x if orient =='v' else y
         pairs = Graph.get_pairs(data, main, hue) if pairs is None else pairs
         
