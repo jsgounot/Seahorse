@@ -24,7 +24,11 @@ Or download / clone the github
 ```bash
 git clone https://github.com/jsgounot/Seahorse.git
 cd Seahorse
-python setup.py install --user
+
+# Old python version
+# python setup.py install --user
+
+python -m pip install .
 ```
 
 ### Examples
