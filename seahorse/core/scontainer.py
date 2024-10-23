@@ -2,9 +2,11 @@
 # @Author: jsgounot
 # @Date:   2019-03-29 15:52:33
 # @Last modified by:   jsgounot
-# @Last Modified time: 2024-10-23 10:56:58
+# @Last Modified time: 2024-10-23 15:38:45
 
 from itertools import product
+
+from matplotlib import ticker
 import matplotlib.gridspec as gridspec
 
 import pandas as pd
@@ -266,39 +268,68 @@ class SubplotsContainer(Fig) :
             elif ax in ax_bottom : ax.set_ylabel("")
             else : ax.set_ylabel(""); ax.set_xlabel("")
 
-    def sharex(self, ignored_axes=[], rm_ticks=True) :
+    def sharex(self, ignored_axes=[], rm_ticks=True, ticks=None, labels=None, ** kwargs) :
+        # Share x axis limits and ticks across subplots
+        # If ticks or labels are provided, FixedLocators are used
+        # Otherwise AutoLocator is defined
+        # See: https://matplotlib.org/stable/api/ticker_api.html#module-matplotlib.ticker
+        # https://matplotlib.org/stable/gallery/subplots_axes_and_figures/shared_axis_demo.html
+
         ax_bottom = list(self.get_edges(bottom=True))
         axes = [ax for ax in self.cgs if ax not in ignored_axes]
 
         min_xlim = min(min(ax.get_xlim()) for ax in axes)
         max_xlim = max(max(ax.get_xlim()) for ax in axes)
+
+        # We define ticks with the 1st axis and use it as template later
+        ax_tmp = axes[0]
+        ax_tmp.set_xlim((min_xlim, max_xlim))
+
+        if ticks or labels:
+            ticks  = ticks or ax_tmp.get_xticks()
+            labels = labels or ax_tmp.get_xticklabels()
+            ax_tmp.set_xticks(ticks, labels=labels, ** kwargs)
+        else:
+            ax_tmp.xaxis.set_major_locator(ticker.AutoLocator())  
         
         for ax in axes :
             ax.set_xlim((min_xlim, max_xlim))
-            if ax not in ax_bottom and rm_ticks :
-                labels = ["" for _ in ax.get_xticklabels()]
-                ticks = ax.get_xticks()
-                ax.set_xticks(ticks, labels=labels)
-                ax.set_xlabel("")
+            ax.sharex(ax_tmp)
+                    
+            flag = (ax not in ax_bottom and rm_ticks) == False
+            ax.tick_params(labelbottom=flag)
+            if not flag: ax.set_xlabel("") 
 
-    def sharey(self, ignored_axes=[], rm_ticks=True) :
-        ax_left = list(self.get_edges(left=True))
-        axes = [ax for ax in self.cgs if ax not in ignored_axes]
+    def sharey(sc, ignored_axes=[], rm_ticks=True, ticks=None, labels=None, ** kwargs):
+        # Share y axis limits and ticks across subplots
+        # See sharex comments
+        ax_left = list(sc.get_edges(left=True))
+        axes = [ax for ax in sc.cgs if ax not in ignored_axes]
 
         min_ylim = min(min(ax.get_ylim()) for ax in axes)
         max_ylim = max(max(ax.get_ylim()) for ax in axes)
 
+        ax_tmp = axes[0]
+        ax_tmp.set_ylim((min_ylim, max_ylim))
+
+        if ticks or labels:
+            ticks  = ticks or ax_tmp.get_yticks()
+            labels = labels or ax_tmp.get_yticklabels()
+            ax_tmp.set_yticks(ticks, labels=labels, ** kwargs)
+        else:
+            ax_tmp.yaxis.set_major_locator(ticker.AutoLocator())  
+        
         for ax in axes :
             ax.set_ylim((min_ylim, max_ylim))
-            if ax not in ax_left and rm_ticks : 
-                labels = ["" for _ in ax.get_yticklabels()]
-                ticks = ax.get_yticks()
-                ax.set_yticks(ticks, labels=labels)
-                ax.set_ylabel("")
+            ax.sharey(ax_tmp)
+                    
+            flag = (ax not in ax_left and rm_ticks) == False
+            ax.tick_params(labelleft=flag)
+            if not flag: ax.set_ylabel("")  
 
-    def share_axes(self, ignored_axes=[], rm_ticks=True) :
-        self.sharex(ignored_axes, rm_ticks)
-        self.sharey(ignored_axes, rm_ticks)
+    def share_axes(self, ignored_axes=[], rm_ticks=True, ** kwargs) :
+        self.sharex(ignored_axes, rm_ticks, ** kwargs)
+        self.sharey(ignored_axes, rm_ticks, ** kwargs)
 
     def set_labels(self, xlabel=None, ylabel=None, sub=True, ** kwargs) :
         if sub : self._set_labels_sub(xlabel, ylabel, ** kwargs)
