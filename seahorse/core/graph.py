@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2019-03-29 15:55:41
 # @Last modified by:   jsgounot
-# @Last Modified time: 2024-05-23 15:12:59
+# @Last Modified time: 2024-10-23 10:34:58
 
 import numpy as np
 from itertools import combinations
@@ -64,7 +64,9 @@ class Graph(Fig) :
 
     def apply_xticklabels(self, fun={}, which="major", ** kwargs) :
         ufun = (lambda x : fun.get(x, x)) if isinstance(fun, dict) else fun
-        self.ax.set_xticklabels(list(self._ticks_names(self.ax.get_xticklabels(which=which), ufun)), ** kwargs)
+        labels = list(self._ticks_names(self.ax.get_xticklabels(which=which), ufun))
+        ticks = self.ax.get_xticks()
+        self.ax.set_xticks(ticks, labels=labels, ** kwargs)
 
     def transform_xticklabels(self, fun, which="major", ** kwargs) :
         self.ax.set_xticklabels(list(fun(self.ax.get_xticklabels(which=which))), ** kwargs)
@@ -74,7 +76,9 @@ class Graph(Fig) :
 
     def apply_yticklabels(self, fun={}, which="major", ** kwargs) :
         ufun = (lambda x : fun.get(x, x)) if isinstance(fun, dict) else fun
-        self.ax.set_yticklabels(list(self._ticks_names(self.ax.get_yticklabels(which=which), ufun)), ** kwargs) 
+        labels = list(self._ticks_names(self.ax.get_yticklabels(which=which), ufun))
+        ticks = self.ax.get_yticks()
+        self.ax.set_yticks(ticks, labels=labels, ** kwargs)
 
     def transform_yticklabels(self, fun={}, which="major", ** kwargs) :
         self.ax.set_yticklabels(list(fun(self.ax.get_yticklabels())), ** kwargs)
