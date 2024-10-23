@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2019-03-29 15:52:33
 # @Last modified by:   jsgounot
-# @Last Modified time: 2021-11-23 10:15:43
+# @Last Modified time: 2024-10-23 10:56:58
 
 from itertools import product
 import matplotlib.gridspec as gridspec
@@ -275,8 +275,10 @@ class SubplotsContainer(Fig) :
         
         for ax in axes :
             ax.set_xlim((min_xlim, max_xlim))
-            if ax not in ax_bottom and rm_ticks : 
-                ax.set_xticklabels(["" for _ in ax.get_xticklabels()])
+            if ax not in ax_bottom and rm_ticks :
+                labels = ["" for _ in ax.get_xticklabels()]
+                ticks = ax.get_xticks()
+                ax.set_xticks(ticks, labels=labels)
                 ax.set_xlabel("")
 
     def sharey(self, ignored_axes=[], rm_ticks=True) :
@@ -289,7 +291,9 @@ class SubplotsContainer(Fig) :
         for ax in axes :
             ax.set_ylim((min_ylim, max_ylim))
             if ax not in ax_left and rm_ticks : 
-                ax.set_yticklabels(["" for _ in ax.get_yticklabels()])
+                labels = ["" for _ in ax.get_yticklabels()]
+                ticks = ax.get_yticks()
+                ax.set_yticks(ticks, labels=labels)
                 ax.set_ylabel("")
 
     def share_axes(self, ignored_axes=[], rm_ticks=True) :
