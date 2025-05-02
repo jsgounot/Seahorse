@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2019-03-29 15:55:41
 # @Last modified by:   jsgounot
-# @Last Modified time: 2024-10-23 10:34:58
+# @Last Modified time: 2024-10-23 18:18:13
 
 import numpy as np
 from itertools import combinations
@@ -303,7 +303,7 @@ class Graph(Fig) :
             # we recenter the bar
             patch.set_x(patch.get_x() + diff * .5)
 
-    def change_boxplot_width(self, fac=.9) :
+    def change_boxplot_width(self, fraction=.9) :
         # https://github.com/mwaskom/seaborn/issues/1076
         # https://stackoverflow.com/questions/56838187/how-to-create-spacing-between-same-subgroup-in-seaborn-boxplot
 
@@ -323,12 +323,34 @@ class Graph(Fig) :
                 xhalf = 0.5 * (xmax - xmin)
 
                 # setting new width of box
-                xmin_new = xmid - fac * xhalf
-                xmax_new = xmid + fac * xhalf
+                xmin_new = xmid - fraction * xhalf
+                xmax_new = xmid + fraction * xhalf
                 verts_sub[verts_sub[:, 0] == xmin, 0] = xmin_new
                 verts_sub[verts_sub[:, 0] == xmax, 0] = xmax_new
 
                 # setting new width of median line
                 for l in self.ax.lines:
-                    if np.all(l.get_xdata() == [xmin, xmax]):
+                    xdata = list(l.get_xdata())
+                    if len(xdata) != 0 and xdata == [xmin, xmax]:
                         l.set_xdata([xmin_new, xmax_new])
+
+
+    def hue_xspan(self, nhue, span_frac=.8, boxplot_width=0.8, start_first=True, ** kwargs):
+        xticks = self.ax.get_xticks()
+        xlim = self.ax.get_xlim()
+
+        relative_centers = [i / (nhue * 2) for i in range((nhue * 2) + 1)][1::2]
+        lpad = (1 - boxplot_width) / 2 # left pad
+        box_span = (boxplot_width / (nhue * 2)) * span_frac
+        
+        for tick in xticks:       
+            for idx, rcenter in enumerate(relative_centers):
+                if idx % 2 != start_first:
+                    center = lpad + (boxplot_width * rcenter) - 0.5 + tick
+                    span_start = center - box_span
+                    span_end = center + box_span
+                    self.ax.axvspan(span_start, span_end, ** kwargs)
+
+        
+        # for some reason add vspan change the xlim
+        self.ax.set_xlim(xlim)

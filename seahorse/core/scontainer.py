@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2019-03-29 15:52:33
 # @Last modified by:   jsgounot
-# @Last Modified time: 2024-10-23 15:38:45
+# @Last Modified time: 2024-10-23 15:43:55
 
 from itertools import product
 

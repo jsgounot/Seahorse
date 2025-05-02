@@ -2,7 +2,7 @@
 # @Author: jsgounot
 # @Date:   2018-05-16 13:53:18
 # @Last modified by:   jsgounot
-# @Last Modified time: 2024-03-20 14:12:04
+# @Last Modified time: 2024-10-23 15:58:29
 
 try: 
     from collections import Mapping, Iterable
@@ -151,7 +151,6 @@ def colors_from_arg(colors, df, column) :
 # -------------------------
 # Legend
 
-
 def basic_legend(ax, names_color, * args, ** kwargs) :
     handle = [Patch(facecolor=color, edgecolor=color, label=name)
         for name, color in names_color.items()]
@@ -166,3 +165,13 @@ def add_custom_basic_legend(ax, names, palette=None, ** kwargs) :
     patches = [Patch(color=palette[idx], label=label)
     for idx, label in enumerate(names)]
     ax.legend(handles = patches, ** kwargs)
+
+# -------------------------
+# Utils
+
+def frange(start, end, step):
+    i = start
+    ndec = str(step)[::-1].find('.')
+    while i <= end:
+        yield i
+        i = round(i + step, ndec)
